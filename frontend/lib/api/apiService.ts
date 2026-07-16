@@ -109,6 +109,25 @@ class ApiService {
         return data;
     }
 
+    async googleAuth(credential: string): Promise<{ user: User; access: string; refresh: string; created: boolean }> {
+        const response = await fetch(`${API_URL}/auth/google/`, {
+            method: 'POST',
+            headers: this.getHeaders(),
+            body: JSON.stringify({ credential }),
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.detail || 'Échec de la connexion avec Google');
+        }
+
+        const data = await response.json();
+        this.setTokens(data.access, data.refresh);
+        localStorage.setItem('user', JSON.stringify(data.user));
+
+        return data;
+    }
+
     async register(data: RegisterData): Promise<{ user: User; access: string; refresh: string }> {
         const response = await fetch(`${API_URL}/auth/register/`, {
             method: 'POST',

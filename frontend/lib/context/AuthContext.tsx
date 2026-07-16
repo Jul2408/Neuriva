@@ -7,6 +7,7 @@ import { apiService } from '@/lib/api/apiService';
 
 interface AuthContextType extends AuthState {
     login: (credentials: LoginCredentials) => Promise<void>;
+    loginWithGoogle: (credential: string) => Promise<void>;
     register: (data: RegisterData) => Promise<void>;
     logout: () => Promise<void>;
     updateUser: (user: User) => void;
@@ -99,6 +100,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    const loginWithGoogle = async (credential: string) => {
+        try {
+            const { user, access, refresh, created } = await apiService.googleAuth(credential);
+
+            setState({
+                user,
+                isAuthenticated: true,
+                isLoading: false,
+            });
+
+            // New users go to onboarding, existing users go to dashboard
+            router.push(created ? '/onboarding' : '/dashboard');
+        } catch (error) {
+            console.error('Google login error:', error);
+            throw error;
+        }
+    };
+
     const register = async (data: RegisterData) => {
         try {
             const { user, access, refresh } = await apiService.register(data);
@@ -146,6 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             value={{
                 ...state,
                 login,
+                loginWithGoogle,
                 register,
                 logout,
                 updateUser,

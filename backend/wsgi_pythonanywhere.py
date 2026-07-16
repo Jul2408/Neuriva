@@ -14,13 +14,14 @@ path = f'/home/{USERNAME}/Neuriva/backend'
 if path not in sys.path:
     sys.path.insert(0, path)
 
+from decouple import config
+
 # Variables d'environnement de production
 os.environ['DJANGO_SETTINGS_MODULE'] = 'neuriva.settings'
-os.environ['DEBUG'] = 'False'
-os.environ['SECRET_KEY'] = 'neuriva-super-secret-prod-key-changez-moi-2026'
-os.environ['ALLOWED_HOSTS'] = f'{USERNAME}.pythonanywhere.com'
-# Remplacez l'URL Vercel par la vôtre après déploiement
-os.environ['CORS_ALLOWED_ORIGINS'] = 'https://neuriva.vercel.app,https://neuriva-jul2408.vercel.app'
+# Let settings.py handle the actual reading of these if they are set in the environment,
+# or we can just ensure they are loaded correctly. PythonAnywhere usually uses a .env file
+# loaded by python-decouple in settings.py, so we don't need to hardcode them here.
+# Just ensure DJANGO_SETTINGS_MODULE is set.
 
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()

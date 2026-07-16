@@ -3,10 +3,15 @@ from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
+from rest_framework.views import APIView
 import uuid
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+from django.conf import settings
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
+from .throttles import LoginRateThrottle, GoogleAuthThrottle
 
 User = get_user_model()
 
@@ -24,6 +29,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+    throttle_classes = [LoginRateThrottle]
 
 from rest_framework_simplejwt.tokens import RefreshToken
 from core.serializers import UserSerializer
@@ -168,3 +174,90 @@ class LogoutView(generics.GenericAPIView):
             return Response(status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class GoogleAuthView(APIView):
+    """Verify Google ID token and return JWT tokens for the user."""
+    permission_classes = (permissions.AllowAny,)
+    throttle_classes = [GoogleAuthThrottle]
+
+    def post(self, request):
+        credential = request.data.get('credential')
+        if not credential:
+            return Response(
+                {'detail': 'Token Google manquant.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        client_id = settings.GOOGLE_CLIENT_ID
+        if not client_id:
+            return Response(
+                {'detail': 'Google OAuth non configuré.'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        try:
+            idinfo = id_token.verify_oauth2_token(
+                credential,
+                google_requests.Request(),
+                client_id
+            )
+        except ValueError as e:
+            print(f"Google token verification failed: {e}")
+            return Response(
+                {'detail': 'Token Google invalide.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        email = idinfo.get('email')
+        first_name = idinfo.get('given_name', '')
+        last_name = idinfo.get('family_name', '')
+        picture = idinfo.get('picture', '')
+        google_sub = idinfo.get('sub', '')  # Unique Google user ID
+
+        if not email:
+            return Response(
+                {'detail': 'Email non disponible depuis Google.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Get or create user by email
+        user, created = User.objects.get_or_create(
+            email=email,
+            defaults={
+                'username': email,
+                'first_name': first_name,
+                'last_name': last_name,
+            }
+        )
+
+        if created:
+            # New user from Google — set unusable password
+            user.set_unusable_password()
+            if picture:
+                user.avatar = picture
+            user.save()
+        else:
+            # Update name if available
+            updated = False
+            if first_name and not user.first_name:
+                user.first_name = first_name
+                updated = True
+            if last_name and not user.last_name:
+                user.last_name = last_name
+                updated = True
+            if picture and not user.avatar:
+                user.avatar = picture
+                updated = True
+            if updated:
+                user.save()
+
+        # Generate JWT tokens
+        refresh = RefreshToken.for_user(user)
+
+        return Response({
+            'user': UserSerializer(user).data,
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+            'created': created,
+        }, status=status.HTTP_200_OK)

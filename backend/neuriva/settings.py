@@ -13,9 +13,33 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+# Force DEBUG=False if SECRET_KEY is the default insecure one, or if DEBUG is explicitly False in env.
+is_insecure_key = SECRET_KEY.startswith('django-insecure-')
+DEBUG = False if is_insecure_key else config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',') + ['127.0.0.1']
+# Production security headers
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_REFERRER_POLICY = 'same-origin'
+
+if not DEBUG:
+    SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+else:
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+
+_allowed_hosts = config('ALLOWED_HOSTS', default='')
+if _allowed_hosts:
+    ALLOWED_HOSTS = _allowed_hosts.split(',')
+else:
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1'] if DEBUG else []
 
 # Application definition
 INSTALLED_APPS = [
@@ -127,6 +151,14 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 50,
     'DATETIME_FORMAT': '%Y-%m-%dT%H:%M:%S%z',
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',
+        'user': '1000/day'
+    }
 }
 
 # Simple JWT settings
@@ -148,6 +180,9 @@ SIMPLE_JWT = {
 GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
 OPENAI_API_KEY = config('OPENAI_API_KEY', default='')
 GROQ_API_KEY = config('GROQ_API_KEY', default='')
+
+# Google OAuth Settings
+GOOGLE_CLIENT_ID = config('GOOGLE_CLIENT_ID', default='')
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = config(

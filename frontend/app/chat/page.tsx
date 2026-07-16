@@ -413,7 +413,7 @@ export default function ChatPage() {
                                 <section>
                                     <div className="flex justify-between items-center mb-3">
                                         <h3 className="text-xs font-semibold text-white/70">Charge Mentale</h3>
-                                        <Badge variant="outline" className="border-primary-500/30 text-primary-400">
+                                        <Badge variant="info" className="border-primary-500/30 text-primary-400">
                                             {appContext?.mental_load?.load_score || 0}/10
                                         </Badge>
                                     </div>

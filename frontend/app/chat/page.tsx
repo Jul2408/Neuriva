@@ -2,12 +2,14 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Brain, User, Sparkles, Loader2, Target, Zap, Activity, ChevronRight, Menu } from 'lucide-react';
+import { Send, Brain, User, Sparkles, Loader2, Target, Zap, Activity, ChevronRight, Menu, Volume2, VolumeX, Bell, BellOff } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { apiService } from '@/lib/api/apiService';
-
+import { playNotificationSound } from '@/lib/audio';
+import { speakText } from '@/lib/speech';
+import { requestNotificationPermission, sendSystemNotification } from '@/lib/notifications';
 interface Message {
     id: string;
     role: 'user' | 'assistant';
@@ -68,6 +70,9 @@ export default function ChatPage() {
     const [appContext, setAppContext] = useState<AppContext | null>(null);
     const [isLoadingContext, setIsLoadingContext] = useState(true);
     const [showContextSidebar, setShowContextSidebar] = useState(true);
+    const [isMuted, setIsMuted] = useState(false);
+    const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+    const [reminderTriggered, setReminderTriggered] = useState(false);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -96,7 +101,52 @@ export default function ChatPage() {
             }
         };
         fetchContext();
+        
+        // Charger les préférences locales
+        if (typeof window !== 'undefined') {
+            const muted = localStorage.getItem('neuriva_muted') === 'true';
+            setIsMuted(muted);
+        }
     }, []);
+
+    // Vérifier les rappels de tâches
+    useEffect(() => {
+        if (!appContext?.priority_task || reminderTriggered || isMuted) return;
+        
+        // Simulation: si on a une tâche prioritaire, on fait un rappel après 10 secondes de navigation
+        const timer = setTimeout(() => {
+            const msg = `Rappel : Votre tâche prioritaire "${appContext.priority_task.title}" vous attend.`;
+            playNotificationSound();
+            speakText(msg);
+            if (notificationsEnabled) {
+                sendSystemNotification("Rappel NEURIVA", { body: msg });
+            }
+            setReminderTriggered(true);
+        }, 10000);
+        
+        return () => clearTimeout(timer);
+    }, [appContext, reminderTriggered, isMuted, notificationsEnabled]);
+
+    const toggleMute = () => {
+        const newMuted = !isMuted;
+        setIsMuted(newMuted);
+        localStorage.setItem('neuriva_muted', String(newMuted));
+        if (newMuted && typeof window !== 'undefined') {
+            window.speechSynthesis?.cancel(); // Arrêter la voix si on mute
+        }
+    };
+
+    const toggleNotifications = async () => {
+        if (!notificationsEnabled) {
+            const granted = await requestNotificationPermission();
+            setNotificationsEnabled(granted);
+            if (granted) {
+                sendSystemNotification("Notifications activées", { body: "NEURIVA pourra vous alerter même en arrière-plan." });
+            }
+        } else {
+            setNotificationsEnabled(false);
+        }
+    };
 
     const handleSend = async (text?: string) => {
         const messageText = text || input;
@@ -130,6 +180,19 @@ export default function ChatPage() {
             };
 
             setMessages(prev => [...prev, aiMessage]);
+
+            // Alerte sonore et vocale
+            if (!isMuted) {
+                playNotificationSound();
+                setTimeout(() => {
+                    speakText(aiMessage.content);
+                }, 500); // Léger délai pour ne pas masquer le son de notification
+            }
+
+            // Notification système (si l'app est en arrière-plan)
+            if (notificationsEnabled && document.hidden) {
+                sendSystemNotification("NEURIVA a répondu", { body: aiMessage.content });
+            }
         } catch (error) {
             console.error('Erreur IA:', error);
             const errorMessage: Message = {
@@ -175,6 +238,28 @@ export default function ChatPage() {
                     </div>
 
                     <div className="flex items-center gap-2">
+                        <button
+                            onClick={toggleNotifications}
+                            className={`p-2 hover:bg-white/5 rounded-lg transition-colors text-white hidden md:block`}
+                            title="Notifications Push"
+                        >
+                            {notificationsEnabled ? (
+                                <Bell className="w-5 h-5 text-primary-400" />
+                            ) : (
+                                <BellOff className="w-5 h-5 text-slate-400" />
+                            )}
+                        </button>
+                        <button
+                            onClick={toggleMute}
+                            className={`p-2 hover:bg-white/5 rounded-lg transition-colors text-white`}
+                            title="Son et Voix de l'IA"
+                        >
+                            {!isMuted ? (
+                                <Volume2 className="w-5 h-5 text-primary-400" />
+                            ) : (
+                                <VolumeX className="w-5 h-5 text-slate-400" />
+                            )}
+                        </button>
                         <button
                             onClick={() => setShowContextSidebar(!showContextSidebar)}
                             className="p-2 hover:bg-white/5 rounded-lg transition-colors text-white"

@@ -1,0 +1,16 @@
+{
+    "name": "NEURIVA",
+    "short_name": "NEURIVA",
+    "description": "Votre second cerveau intelligent pour une productivité sans stress.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0F0F16",
+    "theme_color": "#8B5CF6",
+    "icons": [
+        {
+            "src": "/favicon.ico",
+            "sizes": "64x64 32x32 24x24 16x16",
+            "type": "image/x-icon"
+        }
+    ]
+}

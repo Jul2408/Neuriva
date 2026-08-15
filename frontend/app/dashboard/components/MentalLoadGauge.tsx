@@ -36,41 +36,46 @@ export default function MentalLoadGauge({ loadScore = 4.2 }: MentalLoadGaugeProp
             </div>
 
             {/* Circular Gauge */}
-            <div className="relative w-full aspect-square max-w-[200px] mx-auto mb-6">
-                <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+            <div className="relative w-full aspect-square max-w-[220px] mx-auto mb-8 mt-4">
+                {/* Background ambient glow based on status */}
+                <div className={`absolute inset-0 rounded-full bg-gradient-to-r ${status.color} opacity-20 blur-[40px] mix-blend-screen`}></div>
+                
+                <svg className="w-full h-full -rotate-90 relative z-10" viewBox="0 0 100 100">
                     {/* Background circle */}
                     <circle
                         cx="50"
                         cy="50"
-                        r="40"
+                        r="42"
                         fill="none"
                         stroke="rgba(255,255,255,0.05)"
-                        strokeWidth="8"
+                        strokeWidth="10"
                     />
                     {/* Progress circle */}
                     <motion.circle
                         cx="50"
                         cy="50"
-                        r="40"
+                        r="42"
                         fill="none"
-                        strokeWidth="8"
+                        strokeWidth="10"
                         strokeLinecap="round"
-                        strokeDasharray={`${2 * Math.PI * 40}`}
-                        initial={{ strokeDashoffset: 2 * Math.PI * 40 }}
-                        animate={{ strokeDashoffset: 2 * Math.PI * 40 * (1 - percentage / 100) }}
-                        transition={{ duration: 1.5, ease: "easeOut" }}
+                        strokeDasharray={`${2 * Math.PI * 42}`}
+                        initial={{ strokeDashoffset: 2 * Math.PI * 42 }}
+                        animate={{ strokeDashoffset: 2 * Math.PI * 42 * (1 - percentage / 100) }}
+                        transition={{ duration: 1.5, ease: "easeOut", type: "spring", bounce: 0.2 }}
                         className={`stroke-current bg-gradient-to-r ${status.color}`}
                         style={{
-                            filter: 'drop-shadow(0 0 8px currentColor)'
+                            filter: 'drop-shadow(0 0 12px currentColor)'
                         }}
                     />
                 </svg>
 
                 {/* Center percentage */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-2xl font-display font-bold text-white">
-                        {Math.round(percentage)}%
-                    </span>
+                <div className="absolute inset-0 flex items-center justify-center z-20">
+                    <div className="text-center">
+                        <span className="text-4xl font-display font-black text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]">
+                            {Math.round(percentage)}%
+                        </span>
+                    </div>
                 </div>
             </div>
 

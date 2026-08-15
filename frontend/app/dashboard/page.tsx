@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Brain, Zap, TrendingUp, Clock, CheckCircle2, AlertTriangle, Bell } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Brain, Zap, TrendingUp, Clock, CheckCircle2, AlertTriangle, Bell, Plus, Calendar as CalendarIcon, ArrowRight } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import MentalLoadGauge from './components/MentalLoadGauge';
@@ -23,6 +23,8 @@ export default function DashboardPage() {
     const [error, setError] = React.useState<string | null>(null);
 
     const [showTaskModal, setShowTaskModal] = React.useState(false);
+    const [quickTaskTitle, setQuickTaskTitle] = useState('');
+    const [isSubmittingQuick, setIsSubmittingQuick] = useState(false);
 
     const fetchDashboardData = async () => {
         try {
@@ -53,6 +55,35 @@ export default function DashboardPage() {
     const userName = user?.first_name || user?.username || "Aventurier";
     const currentTime = new Date().getHours();
     const greeting = currentTime < 12 ? "Bonjour" : currentTime < 18 ? "Bon après-midi" : "Bonsoir";
+
+    // Format current date nicely
+    const currentDateFormatted = new Intl.DateTimeFormat('fr-FR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long'
+    }).format(new Date());
+
+    const handleQuickTaskSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!quickTaskTitle.trim()) return;
+
+        setIsSubmittingQuick(true);
+        try {
+            await apiService.createTask({
+                title: quickTaskTitle,
+                estimated_duration: 30, // default
+                priority_label: 'medium', // default
+                status: 'todo'
+            });
+            setQuickTaskTitle('');
+            fetchDashboardData();
+        } catch (err: any) {
+            console.error('Erreur lors de la création rapide:', err);
+            // Optionally could show a toast here
+        } finally {
+            setIsSubmittingQuick(false);
+        }
+    };
 
     if (isLoading) {
         return (
@@ -121,25 +152,68 @@ export default function DashboardPage() {
                 onSuccess={handleTaskCreated}
             />
 
+            {/* Dynamic Background Elements for premium feel */}
+            <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-primary-600/10 rounded-full blur-[120px] pointer-events-none -z-10 animate-pulse-slow"></div>
+            <div className="fixed bottom-0 left-0 w-[400px] h-[400px] bg-secondary-600/10 rounded-full blur-[100px] pointer-events-none -z-10"></div>
+
             {/* Header */}
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4"
+                className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6"
             >
-                <div>
-                    <h1 className="text-3xl md:text-4xl font-display font-bold mb-2">
-                        {greeting}, <span className="text-gradient-primary">{userName}</span>
+                <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-primary-400 font-medium text-sm mb-2">
+                        <CalendarIcon className="w-4 h-4" />
+                        <span className="capitalize">{currentDateFormatted}</span>
+                    </div>
+                    <h1 className="text-3xl md:text-5xl font-display font-bold tracking-tight">
+                        {greeting}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-secondary-400">{userName}</span>
                     </h1>
-                    <p className="text-slate-400">Voici ce qui mérite votre attention maintenant.</p>
+                    <p className="text-slate-400 text-lg">Prêt à accomplir de grandes choses aujourd'hui ?</p>
                 </div>
                 <div className="flex items-center gap-4">
                     <NotificationBell />
-                    <Button onClick={() => setShowTaskModal(true)} className="shadow-lg shadow-primary-500/20">
-                        <Zap className="w-4 h-4 mr-2" />
-                        Nouvelle Tâche
+                    <Button onClick={() => setShowTaskModal(true)} className="shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.5)] h-12 px-6 rounded-xl">
+                        <Plus className="w-5 h-5 mr-2" />
+                        Tâche Avancée
                     </Button>
                 </div>
+            </motion.div>
+
+            {/* Quick Add Task Input */}
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.1 }}
+                className="mb-10 relative group"
+            >
+                <div className="absolute inset-0 bg-gradient-to-r from-primary-500/20 via-secondary-500/20 to-primary-500/20 rounded-2xl blur-xl opacity-50 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                <form onSubmit={handleQuickTaskSubmit} className="relative flex items-center bg-background border border-white/10 rounded-2xl p-2 shadow-2xl">
+                    <div className="pl-4 text-slate-400">
+                        <Zap className="w-6 h-6 text-primary-400" />
+                    </div>
+                    <input 
+                        type="text" 
+                        value={quickTaskTitle}
+                        onChange={(e) => setQuickTaskTitle(e.target.value)}
+                        placeholder="Vider son sac : Que devez-vous faire ?"
+                        className="flex-1 bg-transparent border-none text-white px-4 py-4 focus:outline-none focus:ring-0 text-lg placeholder:text-slate-500"
+                        disabled={isSubmittingQuick}
+                    />
+                    <Button 
+                        type="submit" 
+                        size="icon"
+                        disabled={!quickTaskTitle.trim() || isSubmittingQuick}
+                        className={`mr-2 h-12 w-12 rounded-xl ${quickTaskTitle.trim() ? 'bg-primary-500 hover:bg-primary-600' : 'bg-white/5 text-slate-500'}`}
+                    >
+                        {isSubmittingQuick ? (
+                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                            <ArrowRight className="w-5 h-5" />
+                        )}
+                    </Button>
+                </form>
             </motion.div>
 
             {/* Main Grid */}

@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 import { apiService, User as UserType } from '@/lib/api/apiService';
 import { useRouter } from 'next/navigation';
-import EditProfileModal from './components/EditProfileModal';
 
 export default function ProfilePage() {
     const router = useRouter();
@@ -19,7 +18,6 @@ export default function ProfilePage() {
         focusHours: 0,
         currentStreak: 0
     });
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
     const fetchProfileData = async () => {
@@ -81,36 +79,28 @@ export default function ProfilePage() {
 
     const settingsSections = [
         {
-            title: 'Compte',
-            icon: User,
+            title: 'Compte & Sécurité',
+            icon: Shield,
             items: [
-                { label: 'Informations personnelles', href: '/profile/edit' },
-                { label: 'Sécurité et mot de passe', href: '/profile/security' }
+                { label: 'Informations personnelles', href: '/profile/account' },
+                { label: 'Sécurité et mot de passe', href: '/profile/security' },
+                { label: 'Données & Vie privée', href: '/profile/data', danger: true }
             ]
         },
         {
-            title: 'Préférences',
+            title: 'Personnalisation & Expérience',
             icon: Settings,
             items: [
-                { label: 'Ton de l\'IA', href: '/profile/preferences' },
-                { label: 'Notifications', href: '/profile/notifications' },
-                { label: 'Apparence', href: '/profile/appearance' }
-            ]
-        },
-        {
-            title: 'Données',
-            icon: Database,
-            items: [
-                { label: 'Synchronisation', href: '/profile/sync' },
-                { label: 'Exporter mes données', href: '/profile/export' },
-                { label: 'Supprimer mon compte', href: '/profile/delete', danger: true }
+                { label: 'Ton de l\'IA', href: '/profile/ai-tone' },
+                { label: 'Apparence', href: '/profile/appearance' },
+                { label: 'Notifications', href: '/profile/notifications' }
             ]
         }
     ];
 
     return (
         <div className="min-h-screen bg-background text-white p-6 md:p-8">
-            <div className="max-w-4xl mx-auto">
+            <div className="w-full max-w-lg mx-auto">
                 {/* Header */}
                 <div className="mb-8">
                     <h1 className="text-3xl md:text-4xl font-display font-bold mb-2">
@@ -160,10 +150,12 @@ export default function ProfilePage() {
                         </div>
 
                         {/* Edit Button */}
-                        <Button variant="secondary" onClick={() => setIsEditModalOpen(true)} className="gap-2">
-                            <Edit2 className="w-4 h-4" />
-                            Modifier le profil
-                        </Button>
+                        <Link href="/profile/account">
+                            <Button variant="secondary" className="gap-2">
+                                <Edit2 className="w-4 h-4" />
+                                Modifier le profil
+                            </Button>
+                        </Link>
                     </div>
 
                     {/* Stats */}
@@ -254,13 +246,7 @@ export default function ProfilePage() {
                 </div>
             </div>
 
-            {/* Edit Modal */}
-            <EditProfileModal
-                isOpen={isEditModalOpen}
-                onClose={() => setIsEditModalOpen(false)}
-                user={user}
-                onSuccess={fetchProfileData}
-            />
+            {/* Modal removed in favor of dedicated page */}
         </div>
     );
 }

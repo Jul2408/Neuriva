@@ -17,10 +17,10 @@ interface QuickStatsProps {
 export default function QuickStats({ stats }: QuickStatsProps) {
     // Mock data
     const defaultStats = {
-        streak: 7,
-        tasksCompleted: 12,
-        focusTime: 145,
-        weekProgress: 68
+        streak: 0,
+        tasksCompleted: 0,
+        focusTime: 0,
+        weekProgress: 0
     };
 
     const currentStats = stats || defaultStats;

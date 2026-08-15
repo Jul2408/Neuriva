@@ -1,11 +1,15 @@
 {
-    "name": "NEURIVA",
+    "name": "NEURIVA - Cerveau Personnel Intelligent",
     "short_name": "NEURIVA",
     "description": "Votre second cerveau intelligent pour une productivité sans stress.",
-    "start_url": "/",
+    "start_url": "/dashboard",
+    "scope": "/",
     "display": "standalone",
+    "orientation": "portrait-primary",
     "background_color": "#0F0F16",
     "theme_color": "#8B5CF6",
+    "categories": ["productivity", "lifestyle"],
+    "lang": "fr",
     "icons": [
         {
             "src": "/favicon.ico",
@@ -15,13 +19,31 @@
         {
             "src": "/icon-192x192.png",
             "sizes": "192x192",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any"
         },
         {
             "src": "/icon-512x512.png",
             "sizes": "512x512",
             "type": "image/png",
-            "purpose": "any maskable"
+            "purpose": "maskable"
         }
-    ]
+    ],
+    "shortcuts": [
+        {
+            "name": "Nouvelle tâche",
+            "short_name": "Tâche",
+            "description": "Créer une nouvelle tâche rapidement",
+            "url": "/tasks?new=1",
+            "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+        },
+        {
+            "name": "Chat IA",
+            "short_name": "IA",
+            "description": "Ouvrir l'assistant IA",
+            "url": "/chat",
+            "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+        }
+    ],
+    "screenshots": []
 }

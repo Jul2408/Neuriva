@@ -56,8 +56,46 @@ export default function DashboardPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-background text-white p-6 md:p-8 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+            <div className="min-h-screen bg-background p-6 md:p-8">
+                {/* Header Skeleton */}
+                <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div className="space-y-3 w-full max-w-md">
+                        <div className="h-10 bg-white/5 rounded-xl w-3/4 animate-pulse"></div>
+                        <div className="h-4 bg-white/5 rounded-lg w-1/2 animate-pulse"></div>
+                    </div>
+                    <div className="flex gap-4">
+                        <div className="h-10 w-10 bg-white/5 rounded-xl animate-pulse"></div>
+                        <div className="h-10 w-32 bg-white/5 rounded-xl animate-pulse"></div>
+                    </div>
+                </div>
+
+                {/* Main Grid Skeleton */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Left Column */}
+                    <div className="lg:col-span-2 space-y-6">
+                        {/* Action Card Skeleton */}
+                        <div className="h-64 bg-white/5 rounded-2xl animate-pulse border border-white/5"></div>
+                        {/* Tasks List Skeleton */}
+                        <div className="space-y-3">
+                            <div className="h-6 bg-white/5 rounded w-1/4 animate-pulse mb-4"></div>
+                            {[1, 2, 3].map(i => (
+                                <div key={i} className="h-20 bg-white/5 rounded-xl animate-pulse"></div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Right Column */}
+                    <div className="space-y-6">
+                        {/* Gauge Skeleton */}
+                        <div className="h-48 bg-white/5 rounded-2xl animate-pulse border border-white/5"></div>
+                        {/* Stats Skeleton */}
+                        <div className="grid grid-cols-2 gap-4">
+                            {[1, 2, 3, 4].map(i => (
+                                <div key={i} className="h-24 bg-white/5 rounded-xl animate-pulse"></div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }

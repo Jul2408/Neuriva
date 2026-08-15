@@ -29,9 +29,9 @@ export const Button = ({
     };
 
     const sizes = {
-        sm: 'px-4 py-2 text-sm',
-        md: 'px-6 py-3 text-base',
-        lg: 'px-10 py-4 text-lg font-bold tracking-tight',
+        sm: 'px-3 py-2 text-xs md:text-sm',
+        md: 'px-5 py-2.5 md:px-6 md:py-3 text-sm md:text-base',
+        lg: 'px-6 py-3 md:px-10 md:py-4 text-base md:text-lg font-bold tracking-tight',
     };
 
     return (

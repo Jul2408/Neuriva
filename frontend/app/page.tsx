@@ -2,7 +2,8 @@
 
 import React, { useRef, useState } from 'react';
 import Link from 'next/link';
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import Image from 'next/image';
+import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'framer-motion';
 import {
     Brain,
     Zap,
@@ -150,7 +151,7 @@ export default function Home() {
                     >
                         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-20 h-full w-full pointer-events-none"></div>
                         <div className="glass-card rounded-2xl p-2 md:p-4 border-white/10 shadow-2xl transform-gpu">
-                            <div className="bg-[#0A0A0A] rounded-xl overflow-hidden aspect-[16/9] relative border border-white/5">
+                            <div className="bg-[#0A0A0A] rounded-xl overflow-hidden aspect-auto md:aspect-[16/9] relative border border-white/5">
                                 {/* Dashboard Mockup Elements */}
                                 <div className="absolute top-0 left-0 w-64 h-full border-r border-white/5 bg-[#0F0F16] p-4 hidden md:flex flex-col gap-4">
                                     <div className="h-8 w-8 rounded-full bg-primary-500/20 mb-8 self-center"></div>
@@ -161,53 +162,15 @@ export default function Home() {
                                         </div>
                                     ))}
                                 </div>
-                                <div className="md:ml-64 p-8 grid grid-cols-3 gap-6">
-                                    <div className="col-span-2 space-y-6">
-                                        <div className="h-48 rounded-2xl bg-gradient-to-br from-primary-900/20 to-secondary-900/20 border border-white/5 p-6 relative overflow-hidden group">
-                                            <div className="absolute inset-0 bg-grid opacity-10"></div>
-                                            <div className="flex justify-between items-start mb-8">
-                                                <div>
-                                                    <div className="text-secondary-400 text-sm font-bold mb-1">SCORE DE FOCUS</div>
-                                                    <div className="text-4xl font-display font-bold text-white">92<span className="text-lg text-slate-500">/100</span></div>
-                                                </div>
-                                                <Activity className="text-primary-400" />
-                                            </div>
-                                            <div className="w-full bg-slate-800/50 h-2 rounded-full overflow-hidden">
-                                                <motion.div
-                                                    className="h-full bg-gradient-to-r from-primary-500 to-secondary-400"
-                                                    initial={{ width: 0 }}
-                                                    whileInView={{ width: '92%' }}
-                                                    transition={{ duration: 1.5, delay: 0.5 }}
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-6">
-                                            <div className="h-40 rounded-2xl bg-white/5 border border-white/5 p-4">
-                                                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center mb-4">
-                                                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                                                </div>
-                                                <div className="text-2xl font-bold">12</div>
-                                                <div className="text-slate-500 text-sm">Tâches complétées</div>
-                                            </div>
-                                            <div className="h-40 rounded-2xl bg-white/5 border border-white/5 p-4">
-                                                <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center mb-4">
-                                                    <Zap className="w-4 h-4 text-orange-400" />
-                                                </div>
-                                                <div className="text-2xl font-bold">4.5h</div>
-                                                <div className="text-slate-500 text-sm">Deep Work</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="hidden md:block">
-                                        <div className="h-full rounded-2xl bg-white/5 border border-white/5 p-6">
-                                            <div className="text-sm text-slate-400 mb-6">PROCHAINES ACTIONS</div>
-                                            {[1, 2, 3].map(i => (
-                                                <div key={i} className="mb-4 p-4 rounded-xl bg-white/5 border border-white/5 flex gap-3 text-sm">
-                                                    <div className="w-4 h-4 rounded-full border border-primary-500/50 mt-0.5"></div>
-                                                    <div className="bg-white/10 h-2 w-32 rounded self-center"></div>
-                                                </div>
-                                            ))}
-                                        </div>
+                                <div className="md:ml-64 p-4 md:p-8 flex flex-col gap-4">
+                                    <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-white/10 shadow-2xl">
+                                        <Image 
+                                            src="/dashboard_mockup.png" 
+                                            alt="NEURIVA Dashboard Preview" 
+                                            fill 
+                                            className="object-cover hover:scale-105 transition-transform duration-700"
+                                            sizes="(max-width: 768px) 100vw, 80vw"
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -223,17 +186,17 @@ export default function Home() {
                     <h2 className="text-3xl md:text-5xl font-display font-bold text-center mb-16">Adapté à <span className="text-white">votre cerveau</span></h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <Card className="p-8 hover:bg-white/5 transition-colors">
+                        <Card className="p-6 md:p-8 hover:bg-white/5 transition-colors">
                             <div className="text-4xl mb-6">🎓</div>
                             <h3 className="text-xl font-bold mb-3">L'Étudiant</h3>
                             <p className="text-slate-400 text-sm">Gérez vos partiels et projets sans nuits blanches. NEURIVA décompose vos révisions en blocs digestes.</p>
                         </Card>
-                        <Card className="p-8 hover:bg-white/5 transition-colors">
+                        <Card className="p-6 md:p-8 hover:bg-white/5 transition-colors">
                             <div className="text-4xl mb-6">💻</div>
                             <h3 className="text-xl font-bold mb-3">Le Freelance</h3>
                             <p className="text-slate-400 text-sm">Jonglez entre plusieurs clients sans rien oublier. Le tracking automatique de temps vous sauve la mise.</p>
                         </Card>
-                        <Card className="p-8 hover:bg-white/5 transition-colors">
+                        <Card className="p-6 md:p-8 hover:bg-white/5 transition-colors">
                             <div className="text-4xl mb-6">🧠</div>
                             <h3 className="text-xl font-bold mb-3">Le Cerveau Atypique</h3>
                             <p className="text-slate-400 text-sm">TDAH ? Procrastination ? L'interface ultra-claire et le mode Focus empêchent la dispersion.</p>
@@ -268,7 +231,7 @@ export default function Home() {
                     </div>
                     <div className="flex-1 relative">
                         <div className="absolute inset-0 bg-secondary-500/30 blur-[100px] -z-10"></div>
-                        <div className="glass p-8 rounded-3xl border border-white/10 relative">
+                        <div className="glass p-6 md:p-8 rounded-3xl border border-white/10 relative">
                             {/* Abstract Visual Representation of Flow */}
                             <div className="h-64 flex items-end justify-center gap-2">
                                 {[40, 60, 45, 80, 55, 90, 70, 85, 60, 50].map((h, i) => (
@@ -295,8 +258,8 @@ export default function Home() {
                         <p className="text-slate-400 max-w-2xl mx-auto">La plupart des outils vous demandent de travailler pour eux. NEURIVA travaille pour vous.</p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-12 items-center">
-                        <Card className="p-10 border-red-500/20 bg-red-950/5" variant="outline" hoverEffect={false}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+                        <Card className="p-6 md:p-10 border-red-500/20 bg-red-950/5" variant="outline" hoverEffect={false}>
                             <h3 className="text-xl font-bold text-red-400 mb-6 flex items-center gap-2">
                                 <span className="p-2 rounded-lg bg-red-500/10">❌</span>
                                 Sans NEURIVA
@@ -309,7 +272,7 @@ export default function Home() {
                             </ul>
                         </Card>
 
-                        <Card className="p-10 border-emerald-500/20 bg-emerald-950/5 relative overflow-hidden">
+                        <Card className="p-6 md:p-10 border-emerald-500/20 bg-emerald-950/5 relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-[50px] rounded-full"></div>
                             <h3 className="text-xl font-bold text-emerald-400 mb-6 flex items-center gap-2">
                                 <span className="p-2 rounded-lg bg-emerald-500/10">✨</span>
@@ -335,7 +298,7 @@ export default function Home() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 md:grid-rows-2 gap-8 h-auto md:h-[800px]">
-                        <Card className="md:col-span-2 md:row-span-1 p-10 relative overflow-hidden group">
+                        <Card className="md:col-span-2 md:row-span-1 p-6 md:p-10 relative overflow-hidden group">
                             <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-primary-900/20 to-transparent"></div>
                             <div className="relative z-10">
                                 <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-6 border border-white/10 group-hover:scale-110 transition-transform duration-500">
@@ -346,7 +309,7 @@ export default function Home() {
                             </div>
                         </Card>
 
-                        <Card className="md:col-span-1 md:row-span-1 p-10 flex flex-col justify-between group">
+                        <Card className="md:col-span-1 md:row-span-1 p-6 md:p-10 flex flex-col justify-between group">
                             <div>
                                 <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-6 border border-white/10 group-hover:scale-110 transition-transform duration-500">
                                     <Zap className="w-8 h-8 text-yellow-400" />
@@ -359,7 +322,7 @@ export default function Home() {
                             </div>
                         </Card>
 
-                        <Card className="md:col-span-1 md:row-span-1 p-10 group">
+                        <Card className="md:col-span-1 md:row-span-1 p-6 md:p-10 group">
                             <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-6 border border-white/10 group-hover:scale-110 transition-transform duration-500">
                                 <MessageSquare className="w-8 h-8 text-secondary-400" />
                             </div>
@@ -367,7 +330,7 @@ export default function Home() {
                             <p className="text-slate-400">"Hey NEURIVA, réorganise ma journée, j'ai eu une urgence." — et c'est fait.</p>
                         </Card>
 
-                        <Card className="md:col-span-2 md:row-span-1 p-10 flex items-center justify-between relative overflow-hidden group">
+                        <Card className="md:col-span-2 md:row-span-1 p-6 md:p-10 flex items-center justify-between relative overflow-hidden group">
                             <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent z-10"></div>
                             <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-overlay"></div>
 
@@ -408,16 +371,47 @@ export default function Home() {
                             { step: "02", title: "L'IA Analyse", desc: "NEURIVA évalue la durée, la complexité et votre niveau d'énergie actuel pour créer le planning parfait." },
                             { step: "03", title: "Mode Focus", desc: "Lancez votre session. Une seule tâche s'affiche. Pas de distractions. Juste de l'avancement." }
                         ].map((item, i) => (
-                            <div key={i} className={`relative flex flex-col md:flex-row gap-8 mb-20 ${i % 2 === 0 ? 'md:text-right' : 'md:flex-row-reverse md:text-left'}`}>
-                                <div className="hidden md:block flex-1"></div>
-                                <div className="absolute left-0 md:left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-slate-900 border-4 border-primary-900 flex items-center justify-center z-10 shadow-[0_0_20px_rgba(139,92,246,0.5)]">
-                                    <div className="w-3 h-3 bg-white rounded-full"></div>
+                            <div key={i} className={`relative flex flex-col md:flex-row items-center gap-8 md:gap-16 mb-24 ${i % 2 === 0 ? 'md:text-right' : 'md:flex-row-reverse md:text-left'}`}>
+                                <motion.div 
+                                    className="flex-1 w-full relative"
+                                    initial={{ opacity: 0, x: i % 2 === 0 ? -50 : 50 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.8 }}
+                                    viewport={{ once: true }}
+                                >
+                                    {i === 2 && (
+                                        <div className="relative w-full aspect-square md:aspect-video rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+                                            <Image src="/focus_mockup.png" alt="Focus Mode" fill className="object-cover" />
+                                        </div>
+                                    )}
+                                    {i === 1 && (
+                                        <div className="relative w-full aspect-square md:aspect-video rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+                                            <Image src="/dashboard_mockup.png" alt="AI Analysis" fill className="object-cover object-left-top" />
+                                        </div>
+                                    )}
+                                    {i === 0 && (
+                                        <div className="h-64 w-full rounded-2xl bg-gradient-to-br from-primary-900/30 to-background border border-white/10 flex items-center justify-center overflow-hidden">
+                                            <Brain className="w-24 h-24 text-primary-500/20" />
+                                            <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay"></div>
+                                        </div>
+                                    )}
+                                </motion.div>
+                                
+                                <div className="absolute left-[20px] md:left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-slate-900 border-4 border-primary-500/50 flex items-center justify-center z-10 shadow-[0_0_30px_rgba(139,92,246,0.6)]">
+                                    <div className="w-4 h-4 bg-white rounded-full animate-pulse"></div>
                                 </div>
-                                <div className="flex-1 pl-12 md:pl-0">
-                                    <div className="text-6xl font-display font-bold text-white/5 mb-2 leading-none absolute -top-8 -z-10 select-none">{item.step}</div>
-                                    <h3 className="text-2xl font-bold text-white mb-2">{item.title}</h3>
-                                    <p className="text-slate-400">{item.desc}</p>
-                                </div>
+                                
+                                <motion.div 
+                                    className="flex-1 pl-16 md:pl-0 z-10"
+                                    initial={{ opacity: 0, y: 30 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.6, delay: 0.2 }}
+                                    viewport={{ once: true }}
+                                >
+                                    <div className="text-8xl font-display font-black text-white/[0.03] mb-4 leading-none absolute -top-12 -z-10 select-none pointer-events-none">{item.step}</div>
+                                    <h3 className="text-3xl font-display font-bold text-white mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">{item.title}</h3>
+                                    <p className="text-slate-400 text-lg leading-relaxed">{item.desc}</p>
+                                </motion.div>
                             </div>
                         ))}
                     </div>
@@ -434,13 +428,12 @@ export default function Home() {
                             { user: "Sarah M.", role: "Entrepreneuse", quote: "L'anticipation des retards est bluffante. Je ne cours plus après ma journée, je la dirige." },
                             { user: "Kevin B.", role: "Étudiant en Médecine", quote: "La charge mentale a disparu. Je sais exactement quoi faire et quand le faire. Merci !" }
                         ].map((t, i) => (
-                            <Card key={i} className="p-8">
+                            <Card key={i} className="p-6 md:p-8">
                                 <div className="flex gap-1 mb-4">
                                     {[1, 2, 3, 4, 5].map(star => <span key={star} className="text-yellow-400">★</span>)}
                                 </div>
                                 <p className="text-slate-300 mb-6 italic">"{t.quote}"</p>
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-600"></div>
                                     <div>
                                         <div className="font-bold">{t.user}</div>
                                         <div className="text-xs text-slate-500">{t.role}</div>
@@ -460,8 +453,8 @@ export default function Home() {
                         <h2 className="text-3xl md:text-5xl font-display font-bold mt-4 mb-6">Investissez en <span className="text-white">vous-même</span></h2>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-8 items-center">
-                        <Card className="p-8 border-white/5 bg-white/[0.02]" variant="outline" hoverEffect={false}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                        <Card className="p-6 md:p-8 border-white/5 bg-white/[0.02]" variant="outline" hoverEffect={false}>
                             <h3 className="text-2xl font-bold mb-2">Gratuit</h3>
                             <p className="text-slate-400 mb-8">Pour découvrir la puissance de l'IA.</p>
                             <div className="text-4xl font-display font-bold mb-8">0€ <span className="text-sm font-sans font-normal text-slate-500">/mois</span></div>
@@ -474,11 +467,11 @@ export default function Home() {
                                 <Button variant="secondary" className="w-full">Démarrer gratuitement</Button>
                             </Link>
                         </Card>
-                        <Card className="p-8 border-primary-500 relative transform scale-105 shadow-[0_0_40px_rgba(139,92,246,0.15)]">
+                        <Card className="p-6 md:p-8 border-primary-500 relative transform md:scale-105 shadow-[0_0_40px_rgba(139,92,246,0.15)]">
                             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary-500 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Populaire</div>
                             <h3 className="text-2xl font-bold mb-2">Pro</h3>
                             <p className="text-slate-400 mb-8">Pour ceux qui veulent exceller.</p>
-                            <div className="text-4xl font-display font-bold mb-8 text-gradient-primary">12€ <span className="text-sm font-sans font-normal text-slate-500 text-white">/mois</span></div>
+                            <div className="text-4xl font-display font-bold mb-8 text-gradient-primary">12€ <span className="text-sm font-sans font-normal text-slate-500">/mois</span></div>
                             <ul className="space-y-4 mb-8 text-white">
                                 <li className="flex gap-3 items-center"><CheckCircle2 className="w-4 h-4 text-primary-400" /> IA Illimitée & Personnalisée</li>
                                 <li className="flex gap-3 items-center"><CheckCircle2 className="w-4 h-4 text-primary-400" /> Mode Focus Illimité</li>
@@ -515,7 +508,7 @@ export default function Home() {
             {/* CTA Section */}
             <Section className="py-32 px-6">
                 <div className="max-w-5xl mx-auto">
-                    <Card className="relative overflow-hidden p-12 md:p-24 text-center border-primary-500/30 bg-gradient-to-b from-primary-900/20 to-background group">
+                    <Card className="relative overflow-hidden p-8 sm:p-12 md:p-24 text-center border-primary-500/30 bg-gradient-to-b from-primary-900/20 to-background group">
                         <div className="absolute inset-0 bg-[url('/noise.png')] opacity-30"></div>
                         <div className="absolute top-[-50%] left-[-20%] w-[500px] h-[500px] bg-primary-500/20 rounded-full blur-[100px] group-hover:bg-primary-500/30 transition-all duration-1000"></div>
 

@@ -3,23 +3,17 @@
 import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Shield, Key, Lock, ChevronLeft, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Shield, Key, ChevronLeft, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { apiService } from '@/lib/api/apiService';
+import { toast } from 'sonner';
 
 export default function SecurityPage() {
     const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-    const checkLogin = async () => {
-        // This is a placeholder for checking login status if needed, 
-        // but we assume auth based on layout protection.
-    };
-
-    // For "Forgot Password" trigger inside authenticated session
     const handleResetTrigger = async () => {
         if (!confirm('Voulez-vous recevoir un lien de réinitialisation par email ? Cela vous déconnectera.')) return;
 
@@ -27,32 +21,39 @@ export default function SecurityPage() {
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             if (user.email) {
                 await apiService.resetPassword(user.email);
-                alert('Email envoyé ! Vous allez être déconnecté.');
+                toast.success('Email envoyé ! Vous allez être déconnecté.');
                 apiService.logout();
                 window.location.href = '/auth/login';
             }
         } catch (e) {
-            alert('Erreur lors de la demande.');
+            toast.error('Erreur lors de la demande de réinitialisation.');
         }
     };
 
     const handleChangePassword = async (e: React.FormEvent) => {
         e.preventDefault();
-        setMessage(null);
+        
         if (newPassword !== confirmPassword) {
-            setMessage({ type: 'error', text: 'Les mots de passe ne correspondent pas.' });
+            toast.error('Les mots de passe ne correspondent pas.');
+            return;
+        }
+        
+        if (newPassword.length < 8) {
+            toast.error('Le nouveau mot de passe doit contenir au moins 8 caractères.');
             return;
         }
 
         setIsLoading(true);
         try {
             await apiService.changePassword(oldPassword, newPassword);
-            setMessage({ type: 'success', text: 'Mot de passe modifié avec succès !' });
+            toast.success('Mot de passe modifié avec succès !');
             setOldPassword('');
             setNewPassword('');
             setConfirmPassword('');
         } catch (error: any) {
-            setMessage({ type: 'error', text: error.message || 'Erreur lors du changement.' });
+            // Error is already handled by apiService interceptor (which shows a toast),
+            // but we can catch it here if we want specific handling.
+            toast.error(error.message || 'Erreur lors du changement de mot de passe.');
         } finally {
             setIsLoading(false);
         }
@@ -69,7 +70,7 @@ export default function SecurityPage() {
                 <div className="mb-8">
                     <h1 className="text-3xl font-display font-bold mb-2 flex items-center gap-3">
                         <Shield className="w-8 h-8 text-primary-400" />
-                        Sécurité
+                        Sécurité et mot de passe
                     </h1>
                     <p className="text-slate-400">Gérez la sécurité de votre compte</p>
                 </div>
@@ -82,79 +83,58 @@ export default function SecurityPage() {
                                 <Key className="w-5 h-5 text-blue-400" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold">Mot de passe</h3>
-                                <p className="text-sm text-slate-400">Dernière modification il y a 3 mois</p>
+                                <h3 className="text-lg font-bold">Modifier le mot de passe</h3>
+                                <p className="text-sm text-slate-400">Assurez-vous d'utiliser un mot de passe fort</p>
                             </div>
                         </div>
 
-                        {message && (
-                            <div className={`p-3 rounded-lg mb-4 text-sm ${message.type === 'success' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                                {message.text}
-                            </div>
-                        )}
-
                         <form onSubmit={handleChangePassword} className="space-y-4">
                             <div>
-                                <label className="text-sm text-slate-400 mb-1 block">Ancien mot de passe</label>
+                                <label className="text-sm font-medium text-slate-300 block mb-2">Ancien mot de passe</label>
                                 <input
                                     type="password"
-                                    className="w-full bg-slate-900 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary-500"
+                                    className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 transition-colors"
                                     value={oldPassword}
                                     onChange={(e) => setOldPassword(e.target.value)}
                                     required
                                 />
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-sm text-slate-400 mb-1 block">Nouveau mot de passe</label>
+                                    <label className="text-sm font-medium text-slate-300 block mb-2">Nouveau mot de passe</label>
                                     <input
                                         type="password"
-                                        className="w-full bg-slate-900 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary-500"
+                                        className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 transition-colors"
                                         value={newPassword}
                                         onChange={(e) => setNewPassword(e.target.value)}
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-sm text-slate-400 mb-1 block">Confirmer</label>
+                                    <label className="text-sm font-medium text-slate-300 block mb-2">Confirmer le mot de passe</label>
                                     <input
                                         type="password"
-                                        className="w-full bg-slate-900 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary-500"
+                                        className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 transition-colors"
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                         required
                                     />
                                 </div>
                             </div>
-                            <div className="flex justify-between items-center pt-2">
+                            <div className="flex flex-col sm:flex-row justify-between items-center pt-4 border-t border-white/10 mt-6 gap-4">
                                 <button
                                     type="button"
                                     onClick={handleResetTrigger}
-                                    className="text-sm text-slate-500 hover:text-primary-400 transition-colors"
+                                    className="text-sm text-slate-400 hover:text-white transition-colors"
                                 >
                                     Mot de passe oublié ?
                                 </button>
-                                <Button type="submit" disabled={isLoading} variant="primary">
+                                <Button type="submit" disabled={isLoading} variant="primary" className="w-full sm:w-auto gap-2">
+                                    {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                                     {isLoading ? 'Modification...' : 'Mettre à jour'}
                                 </Button>
                             </div>
                         </form>
-                    </Card>
-
-                    {/* 2FA Card */}
-                    <Card className="p-6 opacity-75">
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                                <Lock className="w-5 h-5 text-emerald-400" />
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-bold">Double authentification (2FA)</h3>
-                                <p className="text-sm text-slate-400">Protégez votre compte avec une étape supplémentaire</p>
-                            </div>
-                        </div>
-                        <Button variant="ghost" disabled className="w-full text-slate-500 border-dashed border">
-                            Bientôt disponible
-                        </Button>
                     </Card>
                 </div>
             </div>

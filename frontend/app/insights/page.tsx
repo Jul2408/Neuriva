@@ -1,18 +1,65 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Zap, Target, Award, Calendar } from 'lucide-react';
+import { TrendingUp, TrendingDown, Zap, Target, Award, Calendar, AlertTriangle } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { apiService } from '@/lib/api/apiService';
 
 export default function InsightsPage() {
-    // Mock data
+    const [dashboardData, setDashboardData] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                const data = await apiService.getDashboardData();
+                setDashboardData(data);
+            } catch (err: any) {
+                console.error('Error fetching dashboard data:', err);
+                if (err.message.includes('Session expired') || err.message.includes('login')) {
+                    window.location.href = '/auth/login';
+                    return;
+                }
+                setError(err.message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchDashboardData();
+    }, []);
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-background p-6 md:p-8 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full border-4 border-primary-500 border-t-transparent animate-spin"></div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-background text-white p-6 md:p-8">
+                <Card className="p-8 text-center border-red-500/20">
+                    <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                    <h2 className="text-xl font-bold mb-2">Erreur de chargement</h2>
+                    <p className="text-slate-400 mb-6">{error}</p>
+                    <Button onClick={() => window.location.reload()}>Réessayer</Button>
+                </Card>
+            </div>
+        );
+    }
+
+    const stats = dashboardData?.stats || {};
     const weeklyStats = {
-        tasksCompleted: 42,
-        focusTime: 18.5, // hours
-        streak: 12,
-        productivity: 87, // percentage
-        improvement: 15 // percentage vs last week
+        tasksCompleted: stats.completed_tasks || 0,
+        focusTime: stats.focus_time ? (stats.focus_time / 60).toFixed(1) : '0', // hours
+        streak: stats.streak || 0,
+        productivity: stats.week_progress || 0,
+        improvement: 0 // Mock temporaire
     };
 
     const dailyData = [

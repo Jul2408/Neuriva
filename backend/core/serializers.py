@@ -1,6 +1,6 @@
 
 from rest_framework import serializers
-from .models import User, Task, Notification, Habit, AIDecision, Notification, MentalLoad, FocusSession, SyncQueue
+from .models import User, Task, Notification, Habit, AIDecision, Notification, MentalLoad, FocusSession, SyncQueue, ChatConversation, ChatMessage
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -60,3 +60,43 @@ class SyncQueueSerializer(serializers.ModelSerializer):
         model = SyncQueue
         fields = '__all__'
         read_only_fields = ('id', 'user', 'created_at')
+
+
+class ChatMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatMessage
+        fields = ['id', 'role', 'content', 'timestamp']
+        read_only_fields = ['id', 'timestamp']
+
+
+class ChatConversationSerializer(serializers.ModelSerializer):
+    messages = ChatMessageSerializer(many=True, read_only=True)
+    last_message = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ChatConversation
+        fields = ['id', 'title', 'created_at', 'updated_at', 'messages', 'last_message']
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_last_message(self, obj):
+        last = obj.messages.last()
+        if last:
+            return {'role': last.role, 'content': last.content[:80], 'timestamp': last.timestamp}
+        return None
+
+
+class ChatConversationListSerializer(serializers.ModelSerializer):
+    """Version allégée pour la liste (sans messages complets)"""
+    last_message = serializers.SerializerMethodField()
+    message_count = serializers.IntegerField(source='messages.count', read_only=True)
+
+    class Meta:
+        model = ChatConversation
+        fields = ['id', 'title', 'created_at', 'updated_at', 'last_message', 'message_count']
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_last_message(self, obj):
+        last = obj.messages.last()
+        if last:
+            return {'role': last.role, 'content': last.content[:80], 'timestamp': last.timestamp}
+        return None

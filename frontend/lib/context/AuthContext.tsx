@@ -33,6 +33,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 if (token && userStr) {
                     const user = JSON.parse(userStr);
 
+                    // Si l'appareil est hors ligne, utiliser le cache local directement
+                    // → la session reste active même sans connexion
+                    if (!navigator.onLine) {
+                        setState({
+                            user,
+                            isAuthenticated: true,
+                            isLoading: false,
+                        });
+                        return;
+                    }
+
                     // Verify token is still valid by fetching current user
                     try {
                         const currentUser = await apiService.getCurrentUser();
@@ -72,11 +83,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }
             } catch (error) {
                 console.error('Auth initialization error:', error);
-                setState({
-                    user: null,
-                    isAuthenticated: false,
-                    isLoading: false,
-                });
+                // En cas d'erreur réseau, garder l'utilisateur connecté s'il a un token local
+                const userStr = localStorage.getItem('user');
+                const token = localStorage.getItem('access_token');
+                if (token && userStr) {
+                    setState({
+                        user: JSON.parse(userStr),
+                        isAuthenticated: true,
+                        isLoading: false,
+                    });
+                } else {
+                    setState({
+                        user: null,
+                        isAuthenticated: false,
+                        isLoading: false,
+                    });
+                }
             }
         };
 

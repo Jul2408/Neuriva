@@ -64,7 +64,7 @@ export default function FocusPage() {
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary-500/20 rounded-full blur-[150px] animate-pulse-slow"></div>
                 </div>
 
-                <div className="relative z-10 max-w-2xl w-full">
+                <div className="relative z-10 w-full max-w-lg mx-auto">
                     {/* Close button */}
                     <button
                         onClick={handleReset}
@@ -171,7 +171,7 @@ export default function FocusPage() {
     // Idle state - Setup
     return (
         <div className="min-h-screen bg-background text-white p-6 md:p-8">
-            <div className="max-w-4xl mx-auto">
+            <div className="w-full max-w-lg mx-auto">
                 <h1 className="text-3xl md:text-4xl font-display font-bold mb-2">
                     Mode <span className="text-gradient-primary">Focus</span>
                 </h1>

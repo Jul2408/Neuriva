@@ -2,6 +2,7 @@
 
 import Sidebar from '@/components/layout/Sidebar';
 import BottomNav from '@/components/layout/BottomNav';
+import GlobalTaskReminder from '@/components/layout/GlobalTaskReminder';
 
 export default function AuthenticatedLayout({
     children,
@@ -10,9 +11,9 @@ export default function AuthenticatedLayout({
 }) {
     return (
         <div className="flex min-h-screen bg-background text-white">
+            <GlobalTaskReminder />
             <Sidebar />
-            {/* Ajout d'un grand padding pb-32 pour dégager la zone de la barre flottante sur mobile */}
-            <main className="flex-1 pb-32 md:pb-0 overflow-y-auto h-screen relative">
+            <main className="flex-1 pb-28 md:pb-0 overflow-y-auto h-screen relative w-full overflow-x-hidden">
                 {children}
             </main>
             <BottomNav />

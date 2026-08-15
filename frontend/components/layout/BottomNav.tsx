@@ -19,7 +19,7 @@ export default function BottomNav() {
     return (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 w-full z-50">
             {/* Fond de la barre : plein, collé au bas, pleine largeur */}
-            <div className="bg-[#0c0c14]/95 backdrop-blur-xl border-t border-white/10 px-2 pt-2 pb-[env(safe-area-inset-bottom,8px)]">
+            <div className="bg-background/95 backdrop-blur-xl border-t border-white/10 px-2 pt-2 pb-[env(safe-area-inset-bottom,8px)]">
                 <div className="flex items-end justify-around w-full max-w-lg mx-auto">
                     {navItems.map((item) => {
                         const isActive = pathname === item.href;
@@ -37,7 +37,7 @@ export default function BottomNav() {
                                         relative flex items-center justify-center w-[56px] h-[56px] rounded-full
                                         bg-gradient-to-tr from-primary-600 via-primary-500 to-accent-500
                                         shadow-[0_4px_24px_rgba(139,92,246,0.5)]
-                                        border-[3px] border-[#0c0c14]
+                                        border-[3px] border-background
                                         transition-transform duration-200
                                         group-hover:scale-105
                                         ${isActive ? 'scale-105 shadow-[0_4px_28px_rgba(139,92,246,0.7)]' : ''}

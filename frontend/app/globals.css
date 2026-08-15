@@ -4,8 +4,27 @@
 
 @layer base {
   :root {
+    --background: 248 250 252;
+    --foreground: 15 23 42;
+    --color-white: 15 23 42;
+    --color-slate-300: 71 85 105;
+    --color-slate-400: 100 116 139;
+    --color-slate-500: 148 163 184;
+    --color-slate-600: 203 213 225;
+    --color-slate-800: 226 232 240;
+    --color-slate-900: 241 245 249;
+  }
+
+  .dark {
     --background: 3 0 20;
     --foreground: 255 255 255;
+    --color-white: 255 255 255;
+    --color-slate-300: 203 213 225;
+    --color-slate-400: 148 163 184;
+    --color-slate-500: 100 116 139;
+    --color-slate-600: 71 85 105;
+    --color-slate-800: 30 41 59;
+    --color-slate-900: 15 23 42;
   }
 
   body {
@@ -20,7 +39,7 @@
   }
 
   .glass-card {
-    @apply bg-[#13111C]/60 backdrop-blur-xl border border-white/5 hover:border-primary-500/50 transition-all duration-300;
+    @apply bg-background/80 backdrop-blur-xl border border-white/5 hover:border-primary-500/50 transition-all duration-300;
   }
 
   .text-gradient {
@@ -32,7 +51,7 @@
   }
 
   .mesh-bg {
-    background-color: #030014;
+    background-color: rgb(var(--background));
     background-image:
       radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.33) 0px, transparent 50%),
       radial-gradient(at 100% 0%, rgba(217, 70, 239, 0.33) 0px, transparent 50%),
@@ -68,14 +87,44 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #030014;
+  background: rgb(var(--background));
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e1e2e;
+  background: rgb(var(--color-slate-800));
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #8b5cf6;
 }
+
+/* ─── Inputs datetime-local : adaptatif light/dark, sans débordement mobile ─── */
+input[type="datetime-local"],
+input[type="date"],
+input[type="time"] {
+  /* Empêche le débordement sur les petits écrans */
+  max-width: 100%;
+  box-sizing: border-box;
+  /* Texte lisible selon le thème */
+  color: rgb(var(--foreground));
+}
+
+/* Icône du calendrier natif adaptée au thème */
+:root input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+:root input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.3);
+  cursor: pointer;
+}
+
+.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8);
+  cursor: pointer;
+}
+
+/* ─── Fond modal adaptatif (utilisé par ProTaskModal) ─── */
+.modal-bg {
+  background-color: rgb(var(--background));
+  border-color: rgb(var(--foreground) / 0.1);
+}

@@ -70,26 +70,40 @@ export default function TaskCard({ task, index, onToggle }: TaskCardProps) {
         }
     };
 
+    const handleDelete = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        try {
+            await apiService.deleteTask(task.id);
+            window.location.reload();
+        } catch (error) {
+            alert("Erreur lors de la suppression de la tâche");
+        }
+    };
+
     const timeLeft = task.dueDate ? formatDateTime(task.dueDate) : null;
+    const isOverdue = task.dueDate && task.dueDate.getTime() < Date.now() && task.status !== 'done';
 
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
+            transition={{ delay: index * 0.05, type: 'spring', stiffness: 300, damping: 20 }}
+            whileHover={{ scale: 1.01, translateY: -2 }}
+            whileTap={{ scale: 0.98 }}
         >
-            <Card className={`p-5 group hover:border-primary-500/30 transition-all cursor-pointer ${task.status === 'done' ? 'opacity-50' : ''}`}>
+            <Card className={`p-5 group hover:border-primary-500/50 hover:shadow-[0_8px_30px_rgb(139,92,246,0.12)] transition-all duration-300 cursor-pointer ${task.status === 'done' ? 'opacity-50' : ''}`}>
                 <div className="flex items-start gap-4">
                     {/* Checkbox */}
                     <button
                         onClick={onToggle}
-                        className="mt-1 w-6 h-6 rounded-full border-2 border-white/20 hover:border-primary-500 transition-all flex items-center justify-center group-hover:scale-110"
+                        className="mt-1 w-8 h-8 md:w-6 md:h-6 shrink-0 rounded-full border-2 border-white/20 hover:border-primary-500 transition-all flex items-center justify-center group-hover:scale-110"
+                        aria-label="Marquer comme terminé"
                     >
                         {task.status === 'done' && (
-                            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                            <CheckCircle2 className="w-5 h-5 md:w-4 md:h-4 text-emerald-400" />
                         )}
                         {task.status === 'in_progress' && (
-                            <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></div>
+                            <div className="w-3 h-3 md:w-2 md:h-2 rounded-full bg-blue-500 animate-pulse"></div>
                         )}
                     </button>
 
@@ -128,16 +142,44 @@ export default function TaskCard({ task, index, onToggle }: TaskCardProps) {
                             </div>
 
                             {task.tags.map(tag => (
-                                <div key={tag} className="flex items-center gap-1 text-slate-500">
-                                    <Tag className="w-3 h-3" />
-                                    <span>{tag}</span>
+                                <div key={tag} className="flex items-center gap-1 text-slate-500 min-w-0">
+                                    <Tag className="w-3 h-3 shrink-0" />
+                                    <span className="truncate max-w-[120px]">{tag}</span>
                                 </div>
                             ))}
                         </div>
+
+                        {/* Overdue Suggestion Alert */}
+                        {isOverdue && (
+                            <motion.div 
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                className="mt-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+                            >
+                                <div className="flex items-center gap-2 text-sm text-red-400 font-medium">
+                                    <AlertTriangle className="w-4 h-4" />
+                                    Cette tâche est en retard. Que voulez-vous faire ?
+                                </div>
+                                <div className="flex items-center gap-2 w-full sm:w-auto">
+                                    <button 
+                                        onClick={handlePostpone}
+                                        className="flex-1 sm:flex-none px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-medium transition-colors border border-white/5"
+                                    >
+                                        Reporter à demain
+                                    </button>
+                                    <button 
+                                        onClick={handleDelete}
+                                        className="flex-1 sm:flex-none px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs font-medium transition-colors border border-red-500/20"
+                                    >
+                                        Supprimer
+                                    </button>
+                                </div>
+                            </motion.div>
+                        )}
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                             onClick={handlePostpone}
                             className="p-2 hover:bg-white/10 rounded-full text-slate-400 hover:text-white transition-colors"

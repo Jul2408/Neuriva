@@ -112,8 +112,40 @@ export default function TasksPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-background text-white p-6 md:p-8 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+            <div className="min-h-screen bg-background p-6 md:p-8">
+                {/* Header Skeleton */}
+                <div className="mb-8 space-y-3 w-full max-w-md">
+                    <div className="h-10 bg-white/5 rounded-xl w-1/2 animate-pulse"></div>
+                    <div className="h-4 bg-white/5 rounded-lg w-1/3 animate-pulse"></div>
+                </div>
+
+                {/* Stats Cards Skeleton */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="h-20 bg-white/5 rounded-xl animate-pulse"></div>
+                    ))}
+                </div>
+
+                {/* Search & Filters Skeleton */}
+                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                    <div className="flex-1 h-12 bg-white/5 rounded-xl animate-pulse"></div>
+                    <div className="w-24 h-12 bg-white/5 rounded-xl animate-pulse"></div>
+                    <div className="w-32 h-12 bg-white/5 rounded-xl animate-pulse"></div>
+                </div>
+
+                {/* Filter Tabs Skeleton */}
+                <div className="flex gap-2 mb-6">
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="w-24 h-10 bg-white/5 rounded-lg animate-pulse"></div>
+                    ))}
+                </div>
+
+                {/* Tasks List Skeleton */}
+                <div className="space-y-4">
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="h-24 bg-white/5 rounded-xl animate-pulse"></div>
+                    ))}
+                </div>
             </div>
         );
     }
@@ -136,7 +168,7 @@ export default function TasksPage() {
 
             {/* Stats Cards */}
             {/* ... (keep stats cards) ... */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <Card className="p-4">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">

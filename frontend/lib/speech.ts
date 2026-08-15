@@ -12,7 +12,13 @@ export const speakText = (text: string, lang: string = 'fr-FR') => {
     // Arrêter toute lecture en cours
     window.speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    // Nettoyer le texte des caractères Markdown pour éviter que l'IA ne lise "astérisque"
+    const cleanText = text
+        .replace(/[*_#~`]+/g, '') // Supprime les caractères spéciaux de formatage Markdown
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remplace les liens [texte](url) par "texte"
+        .trim();
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
     
     // Configurer la langue et les options
     utterance.lang = lang;
@@ -25,8 +31,18 @@ export const speakText = (text: string, lang: string = 'fr-FR') => {
     const frenchVoices = voices.filter(voice => voice.lang.startsWith('fr'));
     
     if (frenchVoices.length > 0) {
-        // Préférer Google français ou Microsoft Hortense si dispo
-        const preferredVoice = frenchVoices.find(v => v.name.includes('Google') || v.name.includes('Hortense')) || frenchVoices[0];
+        // Préférer une voix masculine
+        const maleKeywords = ['paul', 'thomas', 'henri', 'gaspard', 'rémi', 'claude', 'bernard', 'jacques', 'michel', 'david', 'male', 'homme', 'garçon'];
+        
+        let preferredVoice = frenchVoices.find(v => 
+            maleKeywords.some(keyword => v.name.toLowerCase().includes(keyword))
+        );
+        
+        // Si on ne trouve pas de voix spécifiquement masculine, utiliser la première voix dispo
+        if (!preferredVoice) {
+            preferredVoice = frenchVoices[0];
+        }
+        
         utterance.voice = preferredVoice;
     }
 

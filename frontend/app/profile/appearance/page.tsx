@@ -1,21 +1,24 @@
 'use client';
 
 import { Card } from '@/components/ui/Card';
-import { Monitor, Moon, Sun, ChevronLeft, Layout } from 'lucide-react';
+import { Monitor, Moon, Sun, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { apiService } from '@/lib/api/apiService';
+import { toast } from 'sonner';
 
 export default function AppearancePage() {
     const [theme, setTheme] = useState('dark');
-    const [density, setDensity] = useState('comfortable');
 
     useEffect(() => {
         const loadPreferences = async () => {
-            const user = await apiService.getCurrentUser();
-            if (user.preferences) {
-                if (user.preferences.theme) setTheme(user.preferences.theme);
-                if (user.preferences.density) setDensity(user.preferences.density);
+            try {
+                const user = await apiService.getCurrentUser();
+                if (user.preferences && user.preferences.theme) {
+                    setTheme(user.preferences.theme);
+                }
+            } catch (error) {
+                // Ignore error if not logged in
             }
         };
         loadPreferences();
@@ -23,7 +26,21 @@ export default function AppearancePage() {
 
     const updateTheme = async (newTheme: string) => {
         setTheme(newTheme);
-        await apiService.updateUser({ preferences: { ...JSON.parse(localStorage.getItem('user') || '{}').preferences, theme: newTheme } });
+        try {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            await apiService.updateUser({ preferences: { ...user.preferences, theme: newTheme } });
+            
+            // Appliquer la logique de thème si nécessaire
+            if (newTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else if (newTheme === 'light') {
+                document.documentElement.classList.remove('dark');
+            }
+            
+            toast.success("Préférences d'apparence mises à jour");
+        } catch (error) {
+            toast.error("Erreur lors de la mise à jour de l'apparence");
+        }
     };
 
     return (
@@ -44,8 +61,8 @@ export default function AppearancePage() {
 
                 <div className="space-y-6">
                     <Card className="p-6">
-                        <h3 className="text-lg font-bold mb-4">Thème</h3>
-                        <div className="grid grid-cols-3 gap-4">
+                        <h3 className="text-lg font-bold mb-6">Thème</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <button onClick={() => updateTheme('dark')} className="relative group">
                                 {theme === 'dark' && <div className="absolute inset-0 bg-primary-500/20 blur-xl transition-opacity" />}
                                 <div className={`relative p-6 rounded-xl border-2 flex flex-col items-center gap-3 transition-colors ${theme === 'dark' ? 'bg-slate-900 border-primary-500' : 'bg-slate-900 border-transparent hover:border-slate-700'}`}>
@@ -53,7 +70,7 @@ export default function AppearancePage() {
                                         <Moon className={`w-6 h-6 ${theme === 'dark' ? 'text-primary-400' : 'text-slate-400'}`} />
                                     </div>
                                     <span className="font-medium text-white">Sombre</span>
-                                    {theme === 'dark' && <span className="text-xs text-primary-400 bg-primary-500/10 px-2 py-0.5 rounded-full">Actif</span>}
+                                    {theme === 'dark' && <span className="text-xs text-primary-400 bg-primary-500/10 px-3 py-1 rounded-full">Actif</span>}
                                 </div>
                             </button>
 
@@ -63,7 +80,7 @@ export default function AppearancePage() {
                                         <Sun className="w-6 h-6 text-slate-500" />
                                     </div>
                                     <span className="font-medium text-slate-900">Clair</span>
-                                    {theme === 'light' && <span className="text-xs text-primary-600 bg-primary-500/10 px-2 py-0.5 rounded-full">Actif</span>}
+                                    {theme === 'light' && <span className="text-xs text-primary-600 bg-primary-500/10 px-3 py-1 rounded-full">Actif</span>}
                                 </div>
                             </button>
 
@@ -73,33 +90,9 @@ export default function AppearancePage() {
                                         <Monitor className="w-6 h-6 text-slate-400" />
                                     </div>
                                     <span className="font-medium text-slate-300">Système</span>
-                                    {theme === 'system' && <span className="text-xs text-primary-400 bg-primary-500/10 px-2 py-0.5 rounded-full">Actif</span>}
+                                    {theme === 'system' && <span className="text-xs text-primary-400 bg-primary-500/10 px-3 py-1 rounded-full">Actif</span>}
                                 </div>
                             </button>
-                        </div>
-                    </Card>
-                    {/* Rest of the component... */}
-                    <Card className="p-6">
-                        <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                            <Layout className="w-5 h-5 text-purple-400" /> Densité
-                        </h3>
-                        <div className="flex flex-col gap-2">
-                            <label className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 cursor-pointer">
-                                <div className="w-4 h-4 rounded-full border border-primary-500 flex items-center justify-center">
-                                    <div className="w-2 h-2 rounded-full bg-primary-500" />
-                                </div>
-                                <div>
-                                    <p className="font-medium">Confortable</p>
-                                    <p className="text-sm text-slate-400">Espacement standard, idéal pour la concentration</p>
-                                </div>
-                            </label>
-                            <label className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 cursor-pointer opacity-50">
-                                <div className="w-4 h-4 rounded-full border border-slate-600" />
-                                <div>
-                                    <p className="font-medium">Compact</p>
-                                    <p className="text-sm text-slate-400">Plus d'informations sur un seul écran</p>
-                                </div>
-                            </label>
                         </div>
                     </Card>
                 </div>

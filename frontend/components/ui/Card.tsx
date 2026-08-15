@@ -28,7 +28,7 @@ export const Card = ({
     return (
         <div
             className={cn(
-                'rounded-[2rem] p-8 transition-all duration-500',
+                'rounded-2xl md:rounded-[2rem] p-5 md:p-8 transition-all duration-500',
                 variants[variant],
                 hoverEffect && 'hover:bg-white/[0.06] hover:border-primary-500/30 hover:translate-y-[-4px]',
                 className

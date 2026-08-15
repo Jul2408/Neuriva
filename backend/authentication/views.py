@@ -146,8 +146,12 @@ class RequestPasswordResetView(generics.GenericAPIView):
             # Return 200 to avoid leaking user existence
             return Response({'detail': 'Si cet email existe, un lien a été envoyé.'}, status=status.HTTP_200_OK)
 
-from core.models import Task
-from core.serializers import TaskSerializer
+from django.utils import timezone
+from core.models import Task, Habit, FocusSession, MentalLoad, ChatConversation
+from core.serializers import (
+    TaskSerializer, HabitSerializer, FocusSessionSerializer, 
+    MentalLoadSerializer, ChatConversationSerializer
+)
 
 class ExportUserDataView(generics.GenericAPIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -155,11 +159,19 @@ class ExportUserDataView(generics.GenericAPIView):
     def get(self, request):
         user = request.user
         tasks = Task.objects.filter(user=user)
+        habits = Habit.objects.filter(user=user)
+        focus_sessions = FocusSession.objects.filter(user=user)
+        mental_loads = MentalLoad.objects.filter(user=user)
+        conversations = ChatConversation.objects.filter(user=user)
         
         data = {
             'user': UserSerializer(user).data,
             'tasks': TaskSerializer(tasks, many=True).data,
-            'exported_at': str(uuid.uuid4()) # just a unique id or timestamp
+            'habits': HabitSerializer(habits, many=True).data,
+            'focus_sessions': FocusSessionSerializer(focus_sessions, many=True).data,
+            'mental_loads': MentalLoadSerializer(mental_loads, many=True).data,
+            'chat_conversations': ChatConversationSerializer(conversations, many=True).data,
+            'exported_at': timezone.now().isoformat()
         }
         return Response(data, status=status.HTTP_200_OK)
 

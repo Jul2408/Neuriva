@@ -16,8 +16,7 @@ export const speakText = (text: string, lang: string = 'fr-FR') => {
     const cleanText = text
         .replace(/[*_#~`]+/g, '') // Supprime les caractères spéciaux de formatage Markdown
         .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remplace les liens [texte](url) par "texte"
-        .replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}]/gu, '') // Supprime les emojis
-        .replace(/[^\w\s.,?!'-À-ÿ]/g, ' ') // Supprime les symboles mathématiques et ponctuations bizarres
+        .replace(/[^\w\s.,?!'-À-ÿ]/g, ' ') // Supprime les symboles mathématiques, emojis et ponctuations bizarres
         .replace(/\s+/g, ' ') // Nettoie les espaces multiples
         .trim();
 

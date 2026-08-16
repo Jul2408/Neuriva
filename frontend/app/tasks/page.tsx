@@ -60,7 +60,36 @@ export default function TasksPage() {
         }
     };
 
-    const handleTaskCreated = () => {
+    const handleTaskCreated = (result: any) => {
+        if (!result) {
+            // Fallback : si result est vide, refetch
+            fetchTasks();
+            return;
+        }
+        // Transformation du résultat backend au format frontend Task
+        const updatedTask: Task = {
+            id: result.id,
+            title: result.title,
+            description: result.description,
+            estimatedTime: result.estimated_duration,
+            priority: result.priority_label,
+            riskLevel: result.risk_level,
+            status: result.status,
+            dueDate: result.due_date ? new Date(result.due_date) : null,
+            tags: result.tags || []
+        };
+
+        setTasks(prev => {
+            const exists = prev.some(t => t.id === updatedTask.id);
+            if (exists) {
+                // Mise à jour de la tâche existante (mode édition)
+                return prev.map(t => t.id === updatedTask.id ? updatedTask : t);
+            }
+            // Ajout de la nouvelle tâche en haut de la liste
+            return [updatedTask, ...prev];
+        });
+
+        // Refetch silencieux en arrière-plan pour garder la synchro
         fetchTasks();
     };
 

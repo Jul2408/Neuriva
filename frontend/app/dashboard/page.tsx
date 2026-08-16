@@ -48,9 +48,9 @@ export default function DashboardPage() {
         fetchDashboardData();
     }, []);
 
-    const handleTaskCreated = () => {
+    const handleTaskCreated = (_result: any) => {
+        // Refetch du dashboard (données plus riches : stats, mental load, etc.)
         fetchDashboardData();
-        // Optional: Add success toast here
     };
 
     const userName = user?.first_name || user?.username || "Aventurier";

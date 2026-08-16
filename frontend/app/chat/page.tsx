@@ -351,7 +351,7 @@ export default function ChatPage() {
     // ─── Render ───────────────────────────────────────────────────────────────
 
     return (
-        <div className="flex h-[calc(100dvh-4rem)] md:h-[100dvh] bg-background overflow-hidden">
+        <div className="flex h-dvh md:h-dvh bg-background overflow-hidden">
 
             {/* ── Desktop Sidebar ─────────────────────────────── */}
             <AnimatePresence>
@@ -561,9 +561,6 @@ export default function ChatPage() {
                                     {isTyping ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                                 </button>
                             </div>
-                            <p className="text-center text-[10px] text-slate-700 mt-2 uppercase tracking-[0.2em]">
-                                NEURIVA AI · Propulsé par Google Gemini
-                            </p>
                         </div>
                     </>
                 )}

@@ -9,8 +9,8 @@ import { apiService } from '@/lib/api/apiService';
 interface ProTaskModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSuccess: () => void;
-    initialTask?: any | null; // Pour le mode édition
+    onSuccess: (updatedTask: any) => void; // retourne la tâche créée ou modifiée
+    initialTask?: any | null;
 }
 
 export default function ProTaskModal({ isOpen, onClose, onSuccess, initialTask }: ProTaskModalProps) {
@@ -78,10 +78,11 @@ export default function ProTaskModal({ isOpen, onClose, onSuccess, initialTask }
                 taskData.due_date = new Date(dueDate).toISOString();
             }
 
+            let result: any;
             if (initialTask) {
-                await apiService.updateTask(initialTask.id, taskData);
+                result = await apiService.updateTask(initialTask.id, taskData);
             } else {
-                await apiService.createTask(taskData);
+                result = await apiService.createTask(taskData);
             }
 
             // Planifier une alarme persistante via Service Worker (fonctionne hors ligne)
@@ -111,7 +112,7 @@ export default function ProTaskModal({ isOpen, onClose, onSuccess, initialTask }
             }
 
             // Reset form géré par useEffect
-            onSuccess();
+            onSuccess(result); // Passe le résultat au parent pour mise à jour optimiste
             onClose();
         } catch (err: any) {
             console.error('Task error:', err);

@@ -82,6 +82,11 @@ class ApiService {
     }
 
     private async fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
+        if (!this.getToken() && !localStorage.getItem('refresh_token')) {
+            this.clearTokens();
+            throw new Error('Session expirée. Veuillez vous reconnecter.');
+        }
+
         let response = await fetch(url, options);
         if (response.status === 401) {
             try {

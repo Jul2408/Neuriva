@@ -45,7 +45,15 @@ export default function NotificationBell() {
 
     // Core Logic: Poll & Check Reminders
     useEffect(() => {
+        let interval: NodeJS.Timeout;
+        let isSessionExpired = false;
+
         const checkSystem = async () => {
+            if (isSessionExpired || !localStorage.getItem('access_token')) {
+                if (interval) clearInterval(interval);
+                return;
+            }
+
             try {
                 // 1. Fetch Backend Notifications
                 const data = await apiService.getNotifications();
@@ -100,51 +108,40 @@ export default function NotificationBell() {
                                 if (soundEnabled) playSound('alert');
                             }
                         });
-                    } catch (taskError) {
+                    } catch (taskError: any) {
                         console.warn("Failed to fetch tasks for reminders", taskError);
+                        if (taskError.message?.includes('Session') || taskError.message?.includes('login')) {
+                            isSessionExpired = true;
+                        }
                     }
                 }
 
-                // Merge: Existing state must be preserved for local ones not to disappear too fast, 
-                // but for simplicity we re-merge active local reminders + server ones.
-                // Better approach: Add new local ones to a "local buffer" state? 
-                // Simplified: Append new local reminders to current notifications if they are new.
-
-                // For this widget, we will just rebuild the list: Local Reminders (new) + Server.
-                // Note: localReminders contains ONLY newly triggered formatted notifications. 
-                // We actually want to KEEP previously triggered local reminders if they aren't read.
-
-                // To keep it simple and robust: We rely on server notifications primarily. 
-                // Local reminders are immediately "shown" (sound + added to list).
-                // However, since we re-fetch server list, we need to manually persist local ones in state 
-                // OR push them to backend? Pushing to backend is cleaner but complex (requires endpoint).
-                // Let's keep a refs/state for "active local notifications".
-
                 setNotifications(prev => {
                     const existingLocals = prev.filter(n => n.id.startsWith('local_') && !n.is_read);
-                    // Filter out duplicates from localReminders just in case
-                    const newLocals = localReminders.filter(n => !prev.some(p => p.message === n.message)); // Simple dedup by message
+                    const newLocals = localReminders.filter(n => !prev.some(p => p.message === n.message));
 
                     const combined = [...newLocals, ...existingLocals, ...serverNotifications];
 
-                    // Sort by date desc
                     return combined.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
                 });
 
-                // Sound for new SERVER notification
                 const currentUnread = serverNotifications.filter((n: Notification) => !n.is_read).length;
-                if (currentUnread > lastCountRef.current && soundEnabled && localReminders.length === 0) { // Don't double beep
+                if (currentUnread > lastCountRef.current && soundEnabled && localReminders.length === 0) { 
                     playSound('ping');
                 }
                 lastCountRef.current = currentUnread;
 
-            } catch (error) {
+            } catch (error: any) {
                 console.error("System Check Failed", error);
+                if (error.message?.includes('Session') || error.message?.includes('login')) {
+                    isSessionExpired = true;
+                    if (interval) clearInterval(interval);
+                }
             }
         };
 
         checkSystem();
-        const interval = setInterval(checkSystem, 30000);
+        interval = setInterval(checkSystem, 30000);
         return () => clearInterval(interval);
     }, [soundEnabled, userSettings]); // Re-run if settings change
 

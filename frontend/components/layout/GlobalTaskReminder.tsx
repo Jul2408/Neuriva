@@ -141,13 +141,12 @@ export default function GlobalTaskReminder() {
                 tag,
                 renotify: true,
                 vibrate: [200, 100, 200, 100, 400],
-                // @ts-ignore — actions supportées dans Chrome/Android
                 actions: [
                     { action: 'open', title: 'Voir la tâche' },
                     { action: 'dismiss', title: 'Ignorer' },
                 ],
                 data: { url: '/tasks' },
-            });
+            } as any);
         } else {
             // Fallback si le SW n'est pas disponible
             new Notification(title, { body, icon: '/icon-192x192.png', tag });

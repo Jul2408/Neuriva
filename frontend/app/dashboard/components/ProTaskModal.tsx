@@ -148,10 +148,10 @@ export default function ProTaskModal({ isOpen, onClose, onSuccess, initialTask }
                             exit={{ opacity: 0, y: 80, scale: 0.97 }}
                             transition={{ type: 'spring', stiffness: 340, damping: 28 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="w-full sm:max-w-lg relative max-h-[95vh] flex flex-col"
+                            className="w-full sm:max-w-lg relative max-h-[90dvh] sm:max-h-[95vh] flex flex-col"
                         >
                             {/* Conteneur principal — thème adaptatif (light/dark via CSS vars) */}
-                            <div className="relative flex flex-col overflow-hidden rounded-t-3xl sm:rounded-2xl border border-foreground/10 bg-background shadow-2xl p-4 sm:p-6 max-h-full">
+                            <div className="relative flex flex-col overflow-y-auto overflow-x-hidden rounded-t-3xl sm:rounded-2xl border border-foreground/10 bg-background shadow-2xl p-4 pb-24 sm:pb-6 sm:p-6 max-h-full">
 
                                 {/* Glows décoratifs */}
                                 <div className="absolute -top-16 -right-16 w-48 h-48 bg-primary-500/15 rounded-full blur-[60px] pointer-events-none" />

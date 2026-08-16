@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, CheckSquare, BarChart3, User, Sparkles } from 'lucide-react';
+import LivingBrain from '../ui/LivingBrain';
 
 export default function BottomNav() {
     const pathname = usePathname();
@@ -25,28 +26,17 @@ export default function BottomNav() {
                         const isActive = pathname === item.href;
                         const Icon = item.icon;
 
-                        /* ── Bouton IA Central ── */
+                        /* ── Bouton IA Central (Living Brain) ── */
                         if (item.isCenter) {
                             return (
-                                <Link key={item.href} href={item.href} className="relative -mt-7 flex flex-col items-center group">
-                                    {/* Glow pulsé */}
-                                    <div className="absolute inset-0 -top-1 w-[60px] h-[60px] mx-auto rounded-full bg-gradient-to-tr from-primary-500 to-accent-500 blur-xl opacity-60 group-hover:opacity-90 transition-opacity duration-300 animate-pulse-slow" />
-
-                                    {/* Cercle principal */}
-                                    <div className={`
-                                        relative flex items-center justify-center w-[56px] h-[56px] rounded-full
-                                        bg-gradient-to-tr from-primary-600 via-primary-500 to-accent-500
-                                        shadow-[0_4px_24px_rgba(139,92,246,0.5)]
-                                        border-[3px] border-background
-                                        transition-transform duration-200
-                                        group-hover:scale-105
-                                        ${isActive ? 'scale-105 shadow-[0_4px_28px_rgba(139,92,246,0.7)]' : ''}
-                                    `}>
-                                        <Sparkles className="w-6 h-6 text-white" strokeWidth={2.5} />
+                                <Link key={item.href} href={item.href} className="relative -mt-8 flex flex-col items-center group">
+                                    {/* Conteneur principal du composant LivingBrain */}
+                                    <div className="w-[64px] h-[64px] transition-transform duration-300 group-hover:scale-105">
+                                        <LivingBrain isActive={isActive} />
                                     </div>
-
-                                    {/* Label */}
-                                    <span className={`text-[10px] font-semibold mt-1 ${isActive ? 'text-primary-400' : 'text-slate-400'}`}>
+                                    
+                                    {/* Label sous le cerveau */}
+                                    <span className={`text-[10px] font-semibold mt-2 transition-colors ${isActive ? 'text-primary-400' : 'text-slate-400 group-hover:text-primary-300'}`}>
                                         {item.label}
                                     </span>
                                 </Link>

@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/Card';
-import { Clock, AlertTriangle, CheckCircle2, ArrowRight, Tag } from 'lucide-react';
+import { Clock, AlertTriangle, CheckCircle2, ArrowRight, Tag, Pencil } from 'lucide-react';
 
 export interface Task {
     id: string;
@@ -21,12 +21,13 @@ interface TaskCardProps {
     task: Task;
     index: number;
     onToggle: () => void;
+    onEdit?: () => void;
 }
 
 import { apiService } from '@/lib/api/apiService';
 import { CalendarClock } from 'lucide-react';
 
-export default function TaskCard({ task, index, onToggle }: TaskCardProps) {
+export default function TaskCard({ task, index, onToggle, onEdit }: TaskCardProps) {
     // ... existing configs ...
     const priorityConfig = {
         low: { color: 'text-slate-400', bg: 'bg-slate-500/20' },
@@ -180,6 +181,15 @@ export default function TaskCard({ task, index, onToggle }: TaskCardProps) {
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                        {onEdit && (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                                className="p-2 hover:bg-white/10 rounded-full text-slate-400 hover:text-white transition-colors"
+                                title="Modifier"
+                            >
+                                <Pencil className="w-5 h-5" />
+                            </button>
+                        )}
                         <button
                             onClick={handlePostpone}
                             className="p-2 hover:bg-white/10 rounded-full text-slate-400 hover:text-white transition-colors"

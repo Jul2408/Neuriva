@@ -23,6 +23,7 @@ export default function DashboardPage() {
     const [error, setError] = React.useState<string | null>(null);
 
     const [showTaskModal, setShowTaskModal] = React.useState(false);
+    const [editingTask, setEditingTask] = useState<any>(null);
     const [quickTaskTitle, setQuickTaskTitle] = useState('');
     const [isSubmittingQuick, setIsSubmittingQuick] = useState(false);
 
@@ -87,7 +88,7 @@ export default function DashboardPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-background p-6 md:p-8">
+            <div className="min-h-screen bg-transparent p-6 md:p-8">
                 {/* Header Skeleton */}
                 <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div className="space-y-3 w-full max-w-md">
@@ -133,7 +134,7 @@ export default function DashboardPage() {
 
     if (error) {
         return (
-            <div className="min-h-screen bg-background text-white p-6 md:p-8">
+            <div className="min-h-screen bg-transparent text-white p-6 md:p-8">
                 <Card className="p-8 text-center border-red-500/20">
                     <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
                     <h2 className="text-xl font-bold mb-2">Erreur de chargement</h2>
@@ -145,16 +146,13 @@ export default function DashboardPage() {
     }
 
     return (
-        <div className="min-h-screen bg-background text-white p-6 md:p-8">
+        <div className="min-h-screen bg-transparent text-white p-6 md:p-8 relative z-10">
             <ProTaskModal
                 isOpen={showTaskModal}
-                onClose={() => setShowTaskModal(false)}
+                onClose={() => { setShowTaskModal(false); setEditingTask(null); }}
                 onSuccess={handleTaskCreated}
+                initialTask={editingTask}
             />
-
-            {/* Dynamic Background Elements for premium feel */}
-            <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-primary-600/10 rounded-full blur-[120px] pointer-events-none -z-10 animate-pulse-slow"></div>
-            <div className="fixed bottom-0 left-0 w-[400px] h-[400px] bg-secondary-600/10 rounded-full blur-[100px] pointer-events-none -z-10"></div>
 
             {/* Header */}
             <motion.div
@@ -174,7 +172,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="flex items-center gap-4">
                     <NotificationBell />
-                    <Button onClick={() => setShowTaskModal(true)} className="shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.5)] h-12 px-6 rounded-xl">
+                    <Button onClick={() => { setEditingTask(null); setShowTaskModal(true); }} className="shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.5)] h-12 px-6 rounded-xl">
                         <Plus className="w-5 h-5 mr-2" />
                         Tâche Avancée
                     </Button>
@@ -233,7 +231,8 @@ export default function DashboardPage() {
                     {/* Next Actions */}
                     <NextActions
                         tasks={dashboardData?.recent_tasks || []}
-                        onAddTask={() => setShowTaskModal(true)}
+                        onAddTask={() => { setEditingTask(null); setShowTaskModal(true); }}
+                        onEditTask={(task) => { setEditingTask(task); setShowTaskModal(true); }}
                         onTaskUpdate={fetchDashboardData}
                     />
                 </div>

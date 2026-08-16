@@ -22,6 +22,7 @@ export default function TasksPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState<'all' | 'today' | 'urgent' | 'completed'>('all');
     const [showTaskModal, setShowTaskModal] = useState(false);
+    const [editingTask, setEditingTask] = useState<Task | null>(null);
 
     // ... (keep useEffect and fetchTasks)
     useEffect(() => {
@@ -154,8 +155,9 @@ export default function TasksPage() {
         <div className="min-h-screen bg-background text-white p-6 md:p-8">
             <ProTaskModal
                 isOpen={showTaskModal}
-                onClose={() => setShowTaskModal(false)}
+                onClose={() => { setShowTaskModal(false); setEditingTask(null); }}
                 onSuccess={handleTaskCreated}
+                initialTask={editingTask}
             />
 
             {/* Header */}
@@ -231,7 +233,7 @@ export default function TasksPage() {
                     <Filter className="w-4 h-4" />
                     Filtres
                 </Button>
-                <Button className="gap-2" onClick={() => setShowTaskModal(true)}>
+                <Button className="gap-2" onClick={() => { setEditingTask(null); setShowTaskModal(true); }}>
                     <Plus className="w-4 h-4" />
                     Nouvelle tâche
                 </Button>
@@ -263,6 +265,7 @@ export default function TasksPage() {
                             task={task}
                             index={index}
                             onToggle={() => handleToggleTask(task.id)}
+                            onEdit={() => { setEditingTask(task); setShowTaskModal(true); }}
                         />
                     ))
                 )}

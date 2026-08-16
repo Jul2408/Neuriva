@@ -10,9 +10,10 @@ interface ProTaskModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess: () => void;
+    initialTask?: any | null; // Pour le mode édition
 }
 
-export default function ProTaskModal({ isOpen, onClose, onSuccess }: ProTaskModalProps) {
+export default function ProTaskModal({ isOpen, onClose, onSuccess, initialTask }: ProTaskModalProps) {
     const [title, setTitle] = React.useState('');
     const [duration, setDuration] = React.useState(30);
     const [priority, setPriority] = React.useState<'low' | 'medium' | 'high' | 'urgent'>('medium');
@@ -33,8 +34,28 @@ export default function ProTaskModal({ isOpen, onClose, onSuccess }: ProTaskModa
     React.useEffect(() => {
         if (isOpen) {
             setMinDateTime(getMinDateTime());
+            if (initialTask) {
+                setTitle(initialTask.title || initialTask.name || '');
+                setDuration(initialTask.estimatedTime || initialTask.estimated_duration || 30);
+                setPriority(initialTask.priority || initialTask.priority_label || 'medium');
+                
+                if (initialTask.dueDate || initialTask.due_date) {
+                    const dateObj = new Date(initialTask.dueDate || initialTask.due_date);
+                    // Format attendu par datetime-local: YYYY-MM-DDTHH:MM
+                    const formattedDate = new Date(dateObj.getTime() - dateObj.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                    setDueDate(formattedDate);
+                } else {
+                    setDueDate('');
+                }
+            } else {
+                // Mode création
+                setTitle('');
+                setDuration(30);
+                setPriority('medium');
+                setDueDate('');
+            }
         }
-    }, [isOpen]);
+    }, [isOpen, initialTask]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -46,14 +67,22 @@ export default function ProTaskModal({ isOpen, onClose, onSuccess }: ProTaskModa
                 title,
                 estimated_duration: duration,
                 priority_label: priority,
-                status: 'todo',
             };
+
+            // On ne modifie le statut que si c'est une création
+            if (!initialTask) {
+                taskData.status = 'todo';
+            }
 
             if (dueDate) {
                 taskData.due_date = new Date(dueDate).toISOString();
             }
 
-            await apiService.createTask(taskData);
+            if (initialTask) {
+                await apiService.updateTask(initialTask.id, taskData);
+            } else {
+                await apiService.createTask(taskData);
+            }
 
             // Planifier une alarme persistante via Service Worker (fonctionne hors ligne)
             if (dueDate && 'serviceWorker' in navigator) {
@@ -81,17 +110,12 @@ export default function ProTaskModal({ isOpen, onClose, onSuccess }: ProTaskModa
                 }
             }
 
-            // Reset form
-            setTitle('');
-            setDuration(30);
-            setPriority('medium');
-            setDueDate('');
-
+            // Reset form géré par useEffect
             onSuccess();
             onClose();
         } catch (err: any) {
-            console.error('Task creation error:', err);
-            setError(err.message || 'Impossible de créer la tâche');
+            console.error('Task error:', err);
+            setError(err.message || (initialTask ? 'Impossible de modifier la tâche' : 'Impossible de créer la tâche'));
         } finally {
             setIsSubmitting(false);
         }
@@ -123,10 +147,10 @@ export default function ProTaskModal({ isOpen, onClose, onSuccess }: ProTaskModa
                             exit={{ opacity: 0, y: 80, scale: 0.97 }}
                             transition={{ type: 'spring', stiffness: 340, damping: 28 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="w-full sm:max-w-lg relative"
+                            className="w-full sm:max-w-lg relative max-h-[95vh] flex flex-col"
                         >
                             {/* Conteneur principal — thème adaptatif (light/dark via CSS vars) */}
-                            <div className="relative overflow-hidden rounded-t-3xl sm:rounded-2xl border border-foreground/10 bg-background shadow-2xl p-5 sm:p-6">
+                            <div className="relative flex flex-col overflow-hidden rounded-t-3xl sm:rounded-2xl border border-foreground/10 bg-background shadow-2xl p-4 sm:p-6 max-h-full">
 
                                 {/* Glows décoratifs */}
                                 <div className="absolute -top-16 -right-16 w-48 h-48 bg-primary-500/15 rounded-full blur-[60px] pointer-events-none" />
@@ -136,10 +160,10 @@ export default function ProTaskModal({ isOpen, onClose, onSuccess }: ProTaskModa
                                 <div className="sm:hidden w-10 h-1 rounded-full bg-foreground/20 mx-auto mb-4" />
 
                                 {/* Header */}
-                                <div className="flex items-center justify-between mb-5 relative">
+                                <div className="flex items-center justify-between mb-4 sm:mb-5 relative shrink-0">
                                     <h2 className="text-xl font-bold font-display flex items-center gap-2 text-foreground">
                                         <Zap className="w-5 h-5 text-primary-400" />
-                                        Nouvelle Tâche
+                                        {initialTask ? 'Modifier la tâche' : 'Nouvelle Tâche'}
                                     </h2>
                                     <button
                                         onClick={onClose}
@@ -149,7 +173,7 @@ export default function ProTaskModal({ isOpen, onClose, onSuccess }: ProTaskModa
                                     </button>
                                 </div>
 
-                                <form onSubmit={handleSubmit} className="space-y-5 relative">
+                                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 relative overflow-y-auto pr-2 pb-2 custom-scrollbar flex-1">
 
                                     {/* Titre */}
                                     <div className="space-y-1.5">
@@ -239,12 +263,12 @@ export default function ProTaskModal({ isOpen, onClose, onSuccess }: ProTaskModa
                                         {isSubmitting ? (
                                             <span className="flex items-center gap-2">
                                                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                Création...
+                                                {initialTask ? 'Modification...' : 'Création...'}
                                             </span>
                                         ) : (
                                             <span className="flex items-center gap-2">
                                                 <Check className="w-5 h-5" />
-                                                Créer la tâche
+                                                {initialTask ? 'Enregistrer' : 'Créer la tâche'}
                                             </span>
                                         )}
                                     </Button>

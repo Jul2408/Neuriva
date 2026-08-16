@@ -227,7 +227,7 @@ export default function NotificationBell() {
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        className="absolute right-0 top-full mt-4 w-[85vw] max-w-sm md:w-96 z-50 transform origin-top-right"
+                        className="fixed sm:absolute right-2 sm:right-0 left-2 sm:left-auto top-20 sm:top-full mt-0 sm:mt-4 sm:w-96 z-50 transform origin-top sm:origin-top-right"
                     >
                         <Card className="overflow-hidden border-slate-700 shadow-2xl bg-[#0F172A]/95 backdrop-blur-xl">
                             <div className="p-4 border-b border-white/10 flex items-center justify-between">

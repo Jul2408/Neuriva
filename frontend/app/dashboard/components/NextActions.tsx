@@ -4,7 +4,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { CheckCircle2, Clock, ArrowRight, Trash2, Plus } from 'lucide-react';
+import { CheckCircle2, Clock, Trash2, Plus, Pencil } from 'lucide-react';
 import { apiService } from '@/lib/api/apiService';
 
 interface Task {
@@ -18,10 +18,11 @@ interface Task {
 interface NextActionsProps {
     tasks?: Task[];
     onAddTask: () => void;
+    onEditTask?: (task: Task) => void;
     onTaskUpdate: () => void;
 }
 
-export default function NextActions({ tasks = [], onAddTask, onTaskUpdate }: NextActionsProps) {
+export default function NextActions({ tasks = [], onAddTask, onEditTask, onTaskUpdate }: NextActionsProps) {
     const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
     const handleDelete = async (e: React.MouseEvent, taskId: string) => {
@@ -98,14 +99,25 @@ export default function NextActions({ tasks = [], onAddTask, onTaskUpdate }: Nex
                                     </div>
                                 </div>
 
-                                {/* Delete Action */}
-                                <button
-                                    onClick={(e) => handleDelete(e, task.id)}
-                                    className="opacity-0 group-hover:opacity-100 p-2 hover:bg-red-500/20 rounded-full transition-all text-slate-400 hover:text-red-400"
-                                    title="Supprimer"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
+                                {/* Actions */}
+                                <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                                    {onEditTask && (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); onEditTask(task); }}
+                                            className="p-1.5 hover:bg-white/10 rounded-full transition-all text-slate-400 hover:text-white"
+                                            title="Modifier"
+                                        >
+                                            <Pencil className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={(e) => handleDelete(e, task.id)}
+                                        className="p-1.5 hover:bg-red-500/20 rounded-full transition-all text-slate-400 hover:text-red-400"
+                                        title="Supprimer"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
                             </div>
                         </motion.div>
                     ))}

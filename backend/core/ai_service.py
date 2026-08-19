@@ -19,8 +19,8 @@ def _pick_best_model() -> str:
     if _cached_model_name:
         return _cached_model_name
 
-    # Use gemini-2.0-flash as the default modern model
-    _cached_model_name = 'gemini-2.0-flash'
+    # Use gemini-2.5-flash as the default modern model
+    _cached_model_name = 'gemini-2.5-flash'
     return _cached_model_name
 
 

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, Calendar, Clock, AlertTriangle, Zap } from 'lucide-react';
+import { X, Check, Calendar, Clock, AlertTriangle, Zap, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { apiService } from '@/lib/api/apiService';
 
@@ -15,6 +15,8 @@ interface ProTaskModalProps {
 
 export default function ProTaskModal({ isOpen, onClose, onSuccess, initialTask }: ProTaskModalProps) {
     const [title, setTitle] = React.useState('');
+    const [description, setDescription] = React.useState('');
+    const [tags, setTags] = React.useState('');
     const [duration, setDuration] = React.useState(30);
     const [priority, setPriority] = React.useState<'low' | 'medium' | 'high' | 'urgent'>('medium');
     const [dueDate, setDueDate] = React.useState('');
@@ -36,12 +38,13 @@ export default function ProTaskModal({ isOpen, onClose, onSuccess, initialTask }
             setMinDateTime(getMinDateTime());
             if (initialTask) {
                 setTitle(initialTask.title || initialTask.name || '');
+                setDescription(initialTask.description || '');
+                setTags(Array.isArray(initialTask.tags) ? initialTask.tags.join(', ') : '');
                 setDuration(initialTask.estimatedTime || initialTask.estimated_duration || 30);
                 setPriority(initialTask.priority || initialTask.priority_label || 'medium');
                 
                 if (initialTask.dueDate || initialTask.due_date) {
                     const dateObj = new Date(initialTask.dueDate || initialTask.due_date);
-                    // Format attendu par datetime-local: YYYY-MM-DDTHH:MM
                     const formattedDate = new Date(dateObj.getTime() - dateObj.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
                     setDueDate(formattedDate);
                 } else {
@@ -50,6 +53,8 @@ export default function ProTaskModal({ isOpen, onClose, onSuccess, initialTask }
             } else {
                 // Mode création
                 setTitle('');
+                setDescription('');
+                setTags('');
                 setDuration(30);
                 setPriority('medium');
                 setDueDate('');
@@ -63,8 +68,15 @@ export default function ProTaskModal({ isOpen, onClose, onSuccess, initialTask }
         setError(null);
 
         try {
+            const parsedTags = tags
+                .split(',')
+                .map(t => t.trim())
+                .filter(Boolean);
+
             const taskData: any = {
                 title,
+                description,
+                tags: parsedTags,
                 estimated_duration: duration,
                 priority_label: priority,
             };
@@ -87,28 +99,31 @@ export default function ProTaskModal({ isOpen, onClose, onSuccess, initialTask }
 
             // Planifier une alarme persistante via Service Worker (fonctionne hors ligne)
             if (dueDate && 'serviceWorker' in navigator) {
-                try {
-                    // Demander la permission de notification si pas encore accordée
-                    if (Notification.permission === 'default') {
-                        await Notification.requestPermission();
-                    }
+                // Exécuté en arrière-plan pour ne pas bloquer la sauvegarde
+                (async () => {
+                    try {
+                        // Demander la permission de notification si pas encore accordée
+                        if (Notification.permission === 'default') {
+                            await Notification.requestPermission();
+                        }
 
-                    if (Notification.permission === 'granted') {
-                        const reg = await navigator.serviceWorker.ready;
-                        const dueTs = new Date(dueDate).getTime();
+                        if (Notification.permission === 'granted') {
+                            const reg = await navigator.serviceWorker.ready;
+                            const dueTs = new Date(dueDate).getTime();
 
-                        // Envoyer l'alarme au SW qui la stocke dans la Cache API
-                        // → persistante même si l'app est fermée ou le téléphone redémarre
-                        reg.active?.postMessage({
-                            type: 'SCHEDULE_ALARM',
-                            payload: {
-                                alarms: [{ title, dueTs, notified5: false, notifiedNow: false }]
-                            }
-                        });
+                            // Envoyer l'alarme au SW qui la stocke dans la Cache API
+                            // → persistante même si l'app est fermée ou le téléphone redémarre
+                            reg.active?.postMessage({
+                                type: 'SCHEDULE_ALARM',
+                                payload: {
+                                    alarms: [{ title, dueTs, notified5: false, notifiedNow: false }]
+                                }
+                            });
+                        }
+                    } catch (swErr) {
+                        console.warn('[ProTaskModal] Impossible de planifier l\'alarme SW:', swErr);
                     }
-                } catch (swErr) {
-                    console.warn('[ProTaskModal] Impossible de planifier l\'alarme SW:', swErr);
-                }
+                })();
             }
 
             // Reset form géré par useEffect
@@ -189,6 +204,35 @@ export default function ProTaskModal({ isOpen, onClose, onSuccess, initialTask }
                                             className="w-full bg-foreground/5 border border-foreground/10 rounded-xl px-4 py-3 text-foreground placeholder:text-slate-500 focus:outline-none focus:border-primary-500/60 focus:ring-1 focus:ring-primary-500/40 transition-all font-medium"
                                             autoFocus
                                             required
+                                        />
+                                    </div>
+
+                                    {/* Description */}
+                                    <div className="space-y-1.5">
+                                        <label className="text-sm font-medium text-slate-400">
+                                            Description <span className="text-slate-600">(optionnel)</span>
+                                        </label>
+                                        <textarea
+                                            value={description}
+                                            onChange={(e) => setDescription(e.target.value)}
+                                            placeholder="Détails, contexte, ressources nécessaires..."
+                                            rows={3}
+                                            className="w-full bg-foreground/5 border border-foreground/10 rounded-xl px-4 py-3 text-foreground placeholder:text-slate-500 focus:outline-none focus:border-primary-500/60 focus:ring-1 focus:ring-primary-500/40 transition-all text-sm resize-none custom-scrollbar"
+                                        />
+                                    </div>
+
+                                    {/* Tags */}
+                                    <div className="space-y-1.5">
+                                        <label className="text-sm font-medium text-slate-400 flex items-center gap-1.5">
+                                            <Tag className="w-3.5 h-3.5 text-secondary-400 shrink-0" />
+                                            Tags <span className="text-slate-600">(séparés par des virgules)</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={tags}
+                                            onChange={(e) => setTags(e.target.value)}
+                                            placeholder="travail, projet-alpha, urgent..."
+                                            className="w-full bg-foreground/5 border border-foreground/10 rounded-xl px-4 py-3 text-foreground placeholder:text-slate-500 focus:outline-none focus:border-secondary-500/60 focus:ring-1 focus:ring-secondary-500/40 transition-all text-sm"
                                         />
                                     </div>
 

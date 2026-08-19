@@ -62,33 +62,33 @@ export default function InsightsPage() {
         improvement: 0 // Mock temporaire
     };
 
-    const dailyData = [
-        { day: 'Lun', tasks: 8, focus: 3.5 },
-        { day: 'Mar', tasks: 6, focus: 2.8 },
-        { day: 'Mer', tasks: 7, focus: 4.2 },
-        { day: 'Jeu', tasks: 9, focus: 3.9 },
-        { day: 'Ven', tasks: 7, focus: 2.6 },
-        { day: 'Sam', tasks: 3, focus: 1.2 },
-        { day: 'Dim', tasks: 2, focus: 0.3 }
+    const dailyData = dashboardData?.daily_data || [
+        { day: 'Lun', tasks: 0, focus: 0 },
+        { day: 'Mar', tasks: 0, focus: 0 },
+        { day: 'Mer', tasks: 0, focus: 0 },
+        { day: 'Jeu', tasks: 0, focus: 0 },
+        { day: 'Ven', tasks: 0, focus: 0 },
+        { day: 'Sam', tasks: 0, focus: 0 },
+        { day: 'Dim', tasks: 0, focus: 0 }
     ];
 
-    const productiveHours = [
-        { hour: '8h-10h', score: 45 },
-        { hour: '10h-12h', score: 92 },
-        { hour: '14h-16h', score: 78 },
-        { hour: '16h-18h', score: 65 },
-        { hour: '20h-22h', score: 38 }
+    const productiveHours = dashboardData?.productive_hours || [
+        { hour: '8h-10h', score: 0 },
+        { hour: '10h-12h', score: 0 },
+        { hour: '14h-16h', score: 0 },
+        { hour: '16h-18h', score: 0 },
+        { hour: '20h-22h', score: 0 }
     ];
 
-    const achievements = [
-        { id: 1, title: 'Série de 7 jours', icon: '🔥', unlocked: true },
-        { id: 2, title: '50 tâches complétées', icon: '🎯', unlocked: true },
-        { id: 3, title: '10h de focus', icon: '⚡', unlocked: true },
+    const achievements = dashboardData?.achievements || [
+        { id: 1, title: 'Série de 7 jours', icon: '🔥', unlocked: false },
+        { id: 2, title: '50 tâches complétées', icon: '🎯', unlocked: false },
+        { id: 3, title: '10h de focus', icon: '⚡', unlocked: false },
         { id: 4, title: 'Semaine parfaite', icon: '💎', unlocked: false }
     ];
 
-    const maxTasks = Math.max(...dailyData.map(d => d.tasks));
-    const maxFocus = Math.max(...dailyData.map(d => d.focus));
+    const maxTasks = Math.max(...dailyData.map((d: any) => d.tasks));
+    const maxFocus = Math.max(...dailyData.map((d: any) => d.focus));
 
     return (
         <div className="min-h-screen bg-background text-white p-6 md:p-8">
@@ -159,7 +159,7 @@ export default function InsightsPage() {
                     <Card className="p-6">
                         <h3 className="text-xl font-bold mb-6">Activité de la semaine</h3>
                         <div className="space-y-4">
-                            {dailyData.map((day, index) => (
+                            {dailyData.map((day: any, index: number) => (
                                 <motion.div
                                     key={day.day}
                                     initial={{ opacity: 0, x: -20 }}
@@ -208,7 +208,7 @@ export default function InsightsPage() {
                     <Card className="p-6">
                         <h3 className="text-xl font-bold mb-6">Heures productives</h3>
                         <div className="space-y-4">
-                            {productiveHours.map((slot, index) => (
+                            {productiveHours.map((slot: any, index: number) => (
                                 <motion.div
                                     key={slot.hour}
                                     initial={{ opacity: 0, x: 20 }}
@@ -237,7 +237,7 @@ export default function InsightsPage() {
                         </div>
                         <div className="mt-6 p-4 rounded-xl bg-primary-500/10 border border-primary-500/20">
                             <p className="text-sm text-primary-300">
-                                💡 <strong>Insight:</strong> Vous êtes 92% plus productif entre 10h et 12h. Planifiez vos tâches complexes dans ce créneau.
+                                💡 <strong>Insight:</strong> {dashboardData?.ai_insight?.text || "Planifiez vos tâches complexes dans ce créneau."}
                             </p>
                         </div>
                     </Card>
@@ -247,7 +247,7 @@ export default function InsightsPage() {
                 <Card className="p-6">
                     <h3 className="text-xl font-bold mb-6">Succès débloqués</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {achievements.map((achievement, index) => (
+                        {achievements.map((achievement: any, index: number) => (
                             <motion.div
                                 key={achievement.id}
                                 initial={{ opacity: 0, scale: 0.8 }}

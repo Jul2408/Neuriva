@@ -26,79 +26,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Initialize auth state from localStorage
     useEffect(() => {
         const initAuth = async () => {
+            const token = localStorage.getItem('access_token');
+            const refreshToken = localStorage.getItem('refresh_token');
+            const userStr = localStorage.getItem('user');
+
+            // Pas de token du tout → vraiment déconnecté
+            if (!token && !refreshToken) {
+                setState({ user: null, isAuthenticated: false, isLoading: false });
+                return;
+            }
+
+            // On a un token : charger l'utilisateur en cache immédiatement
+            // L'utilisateur voit son compte sans attendre le réseau
+            if (userStr) {
+                setState({ user: JSON.parse(userStr), isAuthenticated: true, isLoading: false });
+            }
+
+            // Vérification réseau silencieuse en arrière-plan
+            // On ne déconnecte JAMAIS sur une simple erreur réseau
             try {
-                const token = localStorage.getItem('access_token');
-                const userStr = localStorage.getItem('user');
+                const currentUser = await apiService.getCurrentUser();
+                setState({ user: currentUser, isAuthenticated: true, isLoading: false });
+            } catch (error: any) {
+                const isNetworkError = error instanceof TypeError || error?.message?.includes('fetch');
+                const is401 = error?.message?.includes('401') || error?.message?.includes('Session expirée');
 
-                if (token && userStr) {
-                    const user = JSON.parse(userStr);
+                if (isNetworkError) {
+                    // Pas de réseau → on garde la session locale intacte
+                    console.info('[Auth] Pas de réseau, session locale maintenue.');
+                    return;
+                }
 
-                    // Si l'appareil est hors ligne, utiliser le cache local directement
-                    // → la session reste active même sans connexion
-                    if (!navigator.onLine) {
-                        setState({
-                            user,
-                            isAuthenticated: true,
-                            isLoading: false,
-                        });
-                        return;
-                    }
-
-                    // Verify token is still valid by fetching current user
+                if (is401) {
+                    // Token expiré → essayer de rafraîchir
                     try {
+                        await apiService.refreshToken();
                         const currentUser = await apiService.getCurrentUser();
-                        setState({
-                            user: currentUser,
-                            isAuthenticated: true,
-                            isLoading: false,
-                        });
-                    } catch (error) {
-                        // Token expired, try to refresh
-                        try {
-                            await apiService.refreshToken();
-                            const currentUser = await apiService.getCurrentUser();
-                            setState({
-                                user: currentUser,
-                                isAuthenticated: true,
-                                isLoading: false,
-                            });
-                        } catch (refreshError) {
-                            // Refresh failed, clear auth
-                            localStorage.removeItem('access_token');
-                            localStorage.removeItem('refresh_token');
-                            localStorage.removeItem('user');
-                            setState({
-                                user: null,
-                                isAuthenticated: false,
-                                isLoading: false,
-                            });
+                        setState({ user: currentUser, isAuthenticated: true, isLoading: false });
+                    } catch (refreshError: any) {
+                        const isRefreshNetworkError = refreshError instanceof TypeError;
+                        if (isRefreshNetworkError) {
+                            // Toujours pas de réseau, on maintient la session
+                            return;
                         }
+                        // Vraie erreur d'auth → déconnecter proprement
+                        apiService.clearTokens();
+                        setState({ user: null, isAuthenticated: false, isLoading: false });
                     }
-                } else {
-                    setState({
-                        user: null,
-                        isAuthenticated: false,
-                        isLoading: false,
-                    });
                 }
-            } catch (error) {
-                console.error('Auth initialization error:', error);
-                // En cas d'erreur réseau, garder l'utilisateur connecté s'il a un token local
-                const userStr = localStorage.getItem('user');
-                const token = localStorage.getItem('access_token');
-                if (token && userStr) {
-                    setState({
-                        user: JSON.parse(userStr),
-                        isAuthenticated: true,
-                        isLoading: false,
-                    });
-                } else {
-                    setState({
-                        user: null,
-                        isAuthenticated: false,
-                        isLoading: false,
-                    });
-                }
+                // Toute autre erreur non-401 : on garde la session
             }
         };
 

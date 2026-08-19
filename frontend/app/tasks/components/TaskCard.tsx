@@ -22,12 +22,13 @@ interface TaskCardProps {
     index: number;
     onToggle: () => void;
     onEdit?: () => void;
+    onChange?: () => void;
 }
 
 import { apiService } from '@/lib/api/apiService';
 import { CalendarClock } from 'lucide-react';
 
-export default function TaskCard({ task, index, onToggle, onEdit }: TaskCardProps) {
+export default function TaskCard({ task, index, onToggle, onEdit, onChange }: TaskCardProps) {
     // ... existing configs ...
     const priorityConfig = {
         low: { color: 'text-slate-400', bg: 'bg-slate-500/20' },
@@ -65,7 +66,7 @@ export default function TaskCard({ task, index, onToggle, onEdit }: TaskCardProp
 
         try {
             await apiService.updateTask(task.id, { due_date: newDate.toISOString() });
-            window.location.reload(); // Simple reload for now to reflect changes, optimally should use a callback
+            if (onChange) onChange();
         } catch (error) {
             alert("Erreur lors du report de la tâche");
         }
@@ -75,7 +76,7 @@ export default function TaskCard({ task, index, onToggle, onEdit }: TaskCardProp
         e.stopPropagation();
         try {
             await apiService.deleteTask(task.id);
-            window.location.reload();
+            if (onChange) onChange();
         } catch (error) {
             alert("Erreur lors de la suppression de la tâche");
         }

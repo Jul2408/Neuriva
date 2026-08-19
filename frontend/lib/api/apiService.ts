@@ -356,6 +356,23 @@ class ApiService {
         return response.json();
     }
 
+    // ─── Focus Sessions ───────────────────────────────────────────────────────
+
+    async createFocusSession(data: any) {
+        const response = await this.fetchWithAuth(`${API_URL}/focus-sessions/`, {
+            method: 'POST',
+            headers: this.getHeaders(true),
+            body: JSON.stringify(data),
+        });
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            throw new Error(notifyError(error, 'Impossible de sauvegarder la session'));
+        }
+        return response.json();
+    }
+
+
+
     // ─── AI Chat (persistant) ─────────────────────────────────────────────────
 
     async sendAIMessage(

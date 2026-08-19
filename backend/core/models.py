@@ -121,6 +121,14 @@ class Task(models.Model):
     class Meta:
         ordering = ['-priority_score', 'due_date']
     
+    def save(self, *args, **kwargs):
+        from django.utils import timezone
+        if self.status == 'done' and not self.completed_at:
+            self.completed_at = timezone.now()
+        elif self.status != 'done':
+            self.completed_at = None
+        super().save(*args, **kwargs)
+    
     def __str__(self):
         return self.title
 
@@ -183,7 +191,8 @@ class AIDecision(models.Model):
             ('reminder', 'Rappel'),
             ('postpone_suggestion', 'Suggestion report'),
             ('risk_alert', 'Alerte risque'),
-            ('focus_mode', 'Mode focus')
+            ('focus_mode', 'Mode focus'),
+            ('chat', 'Chat')
         ]
     )
     

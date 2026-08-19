@@ -295,6 +295,7 @@ export default function TasksPage() {
                             index={index}
                             onToggle={() => handleToggleTask(task.id)}
                             onEdit={() => { setEditingTask(task); setShowTaskModal(true); }}
+                            onChange={fetchTasks}
                         />
                     ))
                 )}

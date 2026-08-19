@@ -3,6 +3,7 @@ import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/context/AuthContext";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import AudioNotificationHandler from "@/components/shared/AudioNotificationHandler";
 import { Toaster } from 'sonner';
 
 const inter = Inter({ subsets: ["latin"], variable: '--font-inter' });
@@ -40,6 +41,7 @@ export default function RootLayout({
             <body className={`${inter.variable} ${outfit.variable} font-sans bg-background text-foreground max-w-full overflow-x-hidden`}>
                 <AuthProvider>
                     {children}
+                    <AudioNotificationHandler />
                     <PWAInstallPrompt />
                     <Toaster theme="dark" position="bottom-right" richColors />
                 </AuthProvider>

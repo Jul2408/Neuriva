@@ -24,7 +24,7 @@ export default function GlobalTaskReminder() {
         if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
             Notification.requestPermission().then((perm) => {
                 if (perm === 'granted') {
-                    toast.success('🔔 Notifications activées ! Vous recevrez des rappels pour vos tâches.');
+                    toast.success('Notifications activées ! Vous recevrez des rappels pour vos tâches.');
                 }
             });
         }
@@ -95,9 +95,9 @@ export default function GlobalTaskReminder() {
                 // Rappel 5 minutes avant
                 if (diffMin <= 5 && diffMin > 0 && !notified5MinRef.current.has(task.id)) {
                     notified5MinRef.current.add(task.id);
-                    toast.info(`⏰ Dans 5 min : "${task.title}"`, { duration: 8000 });
+                    toast.info(`Dans 5 min : "${task.title}"`, { duration: 8000 });
                     fireNotification(
-                        `⏰ Dans 5 min : ${task.title}`,
+                        `Dans 5 min : ${task.title}`,
                         'Préparez-vous à commencer cette tâche !',
                         `alarm-5min-${task.id}`
                     );
@@ -106,9 +106,9 @@ export default function GlobalTaskReminder() {
                 // Rappel à l'heure exacte
                 if (diffMin <= 0 && diffMin > -5 && !notifiedNowRef.current.has(task.id)) {
                     notifiedNowRef.current.add(task.id);
-                    toast.success(`🚀 C'est l'heure ! "${task.title}"`, { duration: 12000 });
+                    toast.success(`C'est l'heure ! "${task.title}"`, { duration: 12000 });
                     fireNotification(
-                        `🚀 C'est l'heure ! ${task.title}`,
+                        `C'est l'heure ! ${task.title}`,
                         "Il est temps de commencer. Bonne concentration !",
                         `alarm-now-${task.id}`
                     );

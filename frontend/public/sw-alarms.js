@@ -59,6 +59,11 @@ async function checkAlarms() {
                     tag: `alarm-5min-${alarm.title}`,
                     url: '/tasks',
                 });
+                
+                // Broadcast pour l'IA Vocale
+                const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+                clientList.forEach(c => c.postMessage({ type: 'ALARM_5MIN_WARNING', alarm }));
+                
                 alarm.notified5 = true;
                 changed = true;
             }
@@ -71,6 +76,11 @@ async function checkAlarms() {
                     tag: `alarm-now-${alarm.title}`,
                     url: '/tasks',
                 });
+                
+                // Broadcast pour le fichier son personnalisé
+                const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+                clientList.forEach(c => c.postMessage({ type: 'ALARM_NOW', alarm }));
+                
                 alarm.notifiedNow = true;
                 changed = true;
             }
@@ -157,6 +167,7 @@ async function showNotification({ title, body, tag, url }) {
             renotify: true,
             requireInteraction: true,
             vibrate: [200, 100, 200, 100, 400],
+            silent: false, // Force le son du système si l'app est fermée
             actions: [
                 { action: 'open', title: '📋 Ouvrir NEURIVA' },
                 { action: 'dismiss', title: '✖ Ignorer' },

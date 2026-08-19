@@ -54,7 +54,7 @@ export default function Sidebar() {
                 <div className="p-4 rounded-xl bg-gradient-to-br from-primary-900/20 to-secondary-900/20 border border-primary-500/20">
                     <p className="text-xs font-bold text-primary-400 uppercase tracking-wider mb-1">Version Gratuite</p>
                     <p className="text-sm text-slate-300 mb-3">Passez à Pro pour débloquer toutes les fonctionnalités</p>
-                    <Link href="/premium">
+                <Link href="/premium">
                         <button className="w-full px-4 py-2 rounded-lg bg-gradient-to-r from-primary-500 to-secondary-500 text-white text-sm font-bold hover:shadow-[0_0_20px_rgba(139,92,246,0.5)] transition-all">
                             Upgrade
                         </button>

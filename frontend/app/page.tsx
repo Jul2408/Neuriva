@@ -88,8 +88,10 @@ export default function Home() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <Link href="/auth/login" className="hidden sm:block text-sm font-medium text-slate-400 hover:text-white transition-colors">
-                            Connexion
+                        <Link href="/auth/login">
+                            <Button variant="outline" size="sm" className="hidden sm:flex rounded-full px-6 border-white/10 bg-white/5 hover:border-primary-500/50 hover:bg-primary-500/10 text-white transition-all backdrop-blur-sm">
+                                Connexion
+                            </Button>
                         </Link>
                         <Link href="/onboarding">
                             <Button size="sm" className="rounded-full px-6">Essayer</Button>

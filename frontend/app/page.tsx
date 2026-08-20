@@ -97,7 +97,7 @@ export default function Home() {
                             <Button size="sm" className="rounded-full px-6">Essayer</Button>
                         </Link>
                         <Link href="/auth/login" className="sm:hidden">
-                            <Button size="sm" className="rounded-full px-6">Se connecter</Button>
+                            <Button size="sm" className="rounded-full px-4 text-sm">Connexion</Button>
                         </Link>
                     </div>
                 </motion.nav>

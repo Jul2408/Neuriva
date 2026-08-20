@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Initialize auth state from localStorage
     useEffect(() => {
-        const initAuth = async () => {
+        const initAuth = async (forceRefresh = false) => {
             const token = localStorage.getItem('access_token');
             const refreshToken = localStorage.getItem('refresh_token');
             const userStr = localStorage.getItem('user');
@@ -37,9 +37,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
 
             // On a un token : charger l'utilisateur en cache immédiatement
-            // L'utilisateur voit son compte sans attendre le réseau
             if (userStr) {
                 setState({ user: JSON.parse(userStr), isAuthenticated: true, isLoading: false });
+            }
+
+            // Si on revient du sommeil, essayer de rafraîchir le token silencieusement
+            if (forceRefresh && refreshToken) {
+                try {
+                    await apiService.refreshToken();
+                } catch {
+                    // Échec du refresh → pas grave, on garde la session locale
+                }
             }
 
             // Vérification réseau silencieuse en arrière-plan
@@ -48,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const currentUser = await apiService.getCurrentUser();
                 setState({ user: currentUser, isAuthenticated: true, isLoading: false });
             } catch (error: any) {
-                const isNetworkError = error instanceof TypeError || error?.message?.includes('fetch');
+                const isNetworkError = error instanceof TypeError || error?.message?.includes('fetch') || error?.message?.includes('Failed to fetch');
                 const is401 = error?.message?.includes('401') || error?.message?.includes('Session expirée');
 
                 if (isNetworkError) {
@@ -64,12 +72,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         const currentUser = await apiService.getCurrentUser();
                         setState({ user: currentUser, isAuthenticated: true, isLoading: false });
                     } catch (refreshError: any) {
-                        const isRefreshNetworkError = refreshError instanceof TypeError;
+                        // Si erreur réseau pendant le refresh → garder la session
+                        const isRefreshNetworkError =
+                            refreshError instanceof TypeError ||
+                            refreshError?.message?.includes('fetch') ||
+                            refreshError?.message?.includes('Failed to fetch');
                         if (isRefreshNetworkError) {
-                            // Toujours pas de réseau, on maintient la session
+                            console.info('[Auth] Pas de réseau lors du refresh, session maintenue.');
                             return;
                         }
-                        // Vraie erreur d'auth → déconnecter proprement
+                        // Vraie erreur d'auth (ex: refresh token révoqué) → déconnecter proprement
                         apiService.clearTokens();
                         setState({ user: null, isAuthenticated: false, isLoading: false });
                     }
@@ -79,6 +91,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
 
         initAuth();
+
+        // Rafraîchir silencieusement quand l'app revient au premier plan
+        // (après veille du téléphone, changement d'onglet, etc.)
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                initAuth(true);
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
     }, []);
 
     const login = async (credentials: LoginCredentials) => {

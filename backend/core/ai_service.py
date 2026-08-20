@@ -9,7 +9,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 # ─── Cache global du meilleur modèle disponible ──────────────────────────────
-# Évite un appel réseau list_models() à chaque message envoyé par l'utilisateur.
 _cached_model_name: str | None = None
 
 
@@ -18,10 +17,16 @@ def _pick_best_model() -> str:
     global _cached_model_name
     if _cached_model_name:
         return _cached_model_name
-
-    # Use gemini-2.5-flash as the default modern model
     _cached_model_name = 'gemini-2.5-flash'
     return _cached_model_name
+
+
+def _make_part(text: str) -> types.Part:
+    """Crée un Part compatible avec toutes les versions du SDK google-genai."""
+    try:
+        return types.Part(text=text)
+    except Exception:
+        return types.Part.from_text(text=text)
 
 
 class NEURIVAAIService:
@@ -42,7 +47,6 @@ class NEURIVAAIService:
             now = timezone.now()
             today = now.date()
 
-            # 1. Tâches actives avec statut retard
             all_active = Task.objects.filter(
                 user=self.user, status__in=['todo', 'in_progress']
             ).order_by('-priority_score')
@@ -55,28 +59,23 @@ class NEURIVAAIService:
                     f"- [{t.priority_label.upper()}] {t.title} ({status_label}, Echeance: {due_str})"
                 )
 
-            # 2. Sessions de focus aujourd'hui
             today_sessions = FocusSession.objects.filter(user=self.user, started_at__date=today)
             focus_minutes = sum(s.actual_duration or 0 for s in today_sessions)
 
-            # 3. Statistiques de performance
             total_done = Task.objects.filter(user=self.user, status='done').count()
             done_today = Task.objects.filter(
                 user=self.user, status='done', completed_at__date=today
             ).count()
 
-            # 4. Habitudes détectées automatiquement
             habits = Habit.objects.filter(user=self.user, is_active=True)[:3]
             habits_str = "\n".join([
                 f"- Pattern: {h.habit_type} (Confiance: {h.confidence_score * 100:.0f}%)"
                 for h in habits
             ])
 
-            # 5. Charge mentale actuelle
             mental_load = MentalLoad.objects.filter(user=self.user).order_by('-recorded_at').first()
             load_score = mental_load.load_score if mental_load else "Inconnue"
 
-            # 6. Défis personnels identifiés lors de l'onboarding
             preferences = getattr(self.user, 'preferences', {}) or {}
             raw_problems = preferences.get('problems', [])
             problem_map = {
@@ -149,9 +148,9 @@ class NEURIVAAIService:
 
 **Style de communication** :
 - **Langue** : Tu dois parler UNIQUEMENT et STRICTEMENT en français. Aucune autre langue n'est autorisée.
-- **Ton** : Ton "{context['tone']}" → {tone_desc}. Reste humain, simple, et va droit au but. Pas de discours inutile ou pompeux.
+- **Ton** : Ton "{context['tone']}" → {tone_desc}. Reste humain, simple, et va droit au but.
 - **Format** : Utilise le Markdown proprement (titres, listes, gras).
-**ATTENTION STRICTE** : Tu dois rester 100% humain et professionnel. Tu as une interdiction formelle et absolue d'utiliser le moindre emoji (aucun smiley, aucun symbole Unicode illustratif). Ton texte doit être pur et sérieux.
+**ATTENTION STRICTE** : Interdiction formelle et absolue d'utiliser le moindre emoji. Ton texte doit être pur et sérieux.
 
 ---
 
@@ -169,26 +168,27 @@ class NEURIVAAIService:
 ---
 
 **RÈGLES ABSOLUES** :
-1. N'UTILISE STRICTEMENT AUCUN EMOJI. C'est une règle vitale.
-2. Si l'utilisateur salue → réponds chaleureusement "Salut {context['user_name']} !" puis propose une aide concrète basée sur son contexte actuel.
+1. N'UTILISE STRICTEMENT AUCUN EMOJI.
+2. Si l'utilisateur salue → réponds chaleureusement "Salut {context['user_name']} !" puis propose une aide concrète.
 3. Si des tâches sont EN RETARD → mentionne-les proactivement avec une suggestion d'action immédiate.
-4. Ne jamais inventer de données. Si tu ne sais pas, dis-le honnêtement.
+4. Ne jamais inventer de données.
 5. Pour toute analyse de tâches → propose toujours une action concrète et prioritaire.
-6. Tu peux créer des tâches. Dès que l'utilisateur te demande de retenir quelque chose ou de créer une tâche, UTILISE L'OUTIL `create_task` de manière proactive."""
+6. Tu peux créer des tâches. Dès que l'utilisateur te demande de retenir quelque chose, UTILISE L'OUTIL `create_task`."""
 
         try:
             model_name = _pick_best_model()
 
-            # Fenêtre d'historique étendue à 12 messages (6 échanges) pour plus de cohérence
             gemini_history = []
             if history:
                 for msg in history[-12:]:
                     role = "user" if msg.get("role") == "user" else "model"
-                    gemini_history.append(types.Content(role=role, parts=[types.Part.from_text(msg.get("content", ""))]))
+                    gemini_history.append(
+                        types.Content(role=role, parts=[_make_part(msg.get("content", ""))])
+                    )
 
             def create_task(title: str, estimated_duration: int = 15) -> str:
                 """Crée une nouvelle tâche pour l'utilisateur dans NEURIVA.
-                
+
                 Args:
                     title: Le titre descriptif de la tâche.
                     estimated_duration: Durée estimée en minutes (défaut 15).
@@ -204,40 +204,29 @@ class NEURIVAAIService:
                 except Exception as e:
                     return f"Erreur lors de la création de la tâche: {str(e)}"
 
-            res_text = None
             try:
                 config = types.GenerateContentConfig(
                     system_instruction=system_instructions,
                     tools=[create_task]
                 )
-                chat_session = self.client.chats.create(
+
+                gemini_history.append(
+                    types.Content(role="user", parts=[_make_part(message)])
+                )
+
+                response = await sync_to_async(self.client.models.generate_content)(
                     model=model_name,
+                    contents=gemini_history,
                     config=config
                 )
-                
-                # Send the entire history as part of the context or handle history appropriately
-                # The new SDK might not directly support history in `chats.create`.
-                # If history is provided, we can either re-send it or just use generate_content
-                if gemini_history:
-                    # Append the new message to history
-                    gemini_history.append(types.Content(role="user", parts=[types.Part.from_text(message)]))
-                    response = await sync_to_async(self.client.models.generate_content)(
-                        model=model_name,
-                        contents=gemini_history,
-                        config=config
-                    )
-                else:
-                    response = await sync_to_async(chat_session.send_message)(message)
 
                 res_text = response.text
 
             except Exception as inner_e:
                 err_str = str(inner_e)
-
                 if "429" in err_str or "quota" in err_str.lower() or "rate" in err_str.lower():
                     return "Le quota Gemini est temporairement atteint. Reessayez dans quelques secondes."
-                else:
-                    raise inner_e
+                raise inner_e
 
             await self._log(message, res_text)
             return res_text

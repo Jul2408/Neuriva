@@ -153,7 +153,7 @@ export default function ProTaskModal({ isOpen, onClose, onSuccess, initialTask }
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm"
+                        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center"
                         onClick={onClose}
                     >
                         {/* Modal — slide up sur mobile, scale sur desktop */}
@@ -163,10 +163,10 @@ export default function ProTaskModal({ isOpen, onClose, onSuccess, initialTask }
                             exit={{ opacity: 0, y: 80, scale: 0.97 }}
                             transition={{ type: 'spring', stiffness: 340, damping: 28 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="w-full sm:max-w-lg relative max-h-[90dvh] sm:max-h-[95vh] flex flex-col"
+                            className="w-full sm:max-w-lg sm:mx-auto relative max-h-[90dvh] sm:max-h-[95vh] flex flex-col sm:px-4"
                         >
                             {/* Conteneur principal — thème adaptatif (light/dark via CSS vars) */}
-                            <div className="relative flex flex-col overflow-y-auto overflow-x-hidden rounded-t-3xl sm:rounded-2xl border border-foreground/10 bg-background shadow-2xl p-4 pb-24 sm:pb-6 sm:p-6 max-h-full">
+                            <div className="relative flex flex-col overflow-y-auto overflow-x-hidden rounded-t-3xl sm:rounded-2xl border border-foreground/10 bg-background shadow-2xl p-4 pb-24 sm:pb-6 sm:p-6 max-h-full mx-0">
 
                                 {/* Glows décoratifs */}
                                 <div className="absolute -top-16 -right-16 w-48 h-48 bg-primary-500/15 rounded-full blur-[60px] pointer-events-none" />
